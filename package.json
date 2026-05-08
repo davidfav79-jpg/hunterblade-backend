@@ -4,8 +4,9 @@
   "description": "Sistema de fidelización Hunter Blade — Fase 1: Tarjeta de Sellos",
   "main": "index.js",
   "scripts": {
-  "start": "node index.js",
-  "dev": "nodemon index.js",
+  "start": "node src/index.js",
+  "dev": "nodemon src/index.js",
+  "main": "src/index.js",
     "db:init": "psql $DATABASE_URL -f db/schema.sql"
   },
   "dependencies": {

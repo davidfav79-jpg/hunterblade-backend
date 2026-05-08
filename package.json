@@ -1,0 +1,19 @@
+{
+  "name": "hunterblade-loyalty",
+  "version": "1.0.0",
+  "description": "Sistema de fidelización Hunter Blade — Fase 1: Tarjeta de Sellos",
+  "main": "src/index.js",
+  "scripts": {
+    "start":  "node src/index.js",
+    "dev":    "nodemon src/index.js",
+    "db:init": "psql $DATABASE_URL -f db/schema.sql"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.0",
+    "express": "^4.18.0",
+    "pg": "^8.11.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  }
+}

@@ -381,12 +381,12 @@ async function toggleScanner() {
       canvas.height=video.videoHeight;
       ctx.drawImage(video,0,0,canvas.width,canvas.height);
       const imageData=ctx.getImageData(0,0,canvas.width,canvas.height);
-      const code=jsQR(imageData.data,imageData.width,imageData.height,{inversionAttempts:'dontInvert'});
+      const code=jsQR(imageData.data,imageData.width,imageData.height,{inversionAttempts:'attemptBoth'});
       if(code){
         clearInterval(state.scanInterval);
         buscarPorQR(code.data);
       }
-    },300);
+    },500);
 
   } catch(e){ showToast('No se pudo acceder a la cámara','error'); }
 }

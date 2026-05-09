@@ -130,7 +130,8 @@
     <div class="search-row">
       <input type="tel" id="phoneInput" placeholder="Teléfono del cliente" maxlength="15"
              onkeydown="if(event.key==='Enter')buscarCliente()">
-      <button class="btn-outline" onclick="toggleScanner()" id="btnScanner" title="Escanear QR">📷</button>
+      <button class="btn-outline" onclick="document.getElementById('qrFileInput').click()" id="btnScanner" title="Escanear QR">📷</button>
+      <input type="file" id="qrFileInput" accept="image/*" capture="environment" style="display:none" onchange="procesarImagenQR(this)">
       <button class="btn-gold" onclick="buscarCliente()" id="btnBuscar">BUSCAR</button>
     </div>
   </div>
@@ -351,33 +352,29 @@ function mostrarCliente(data) {
 }
 
 async function toggleScanner() {
-  if(state.scannerActive){ closeScanner(); return; }
+  async function procesarImagenQR(input) {
+  const file = input.files[0];
+  if (!file) return;
+  showToast('Procesando...', '');
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
-    state.scannerStream=stream;
-    const video=document.getElementById('qr-video');
-    video.srcObject=stream;
-    document.getElementById('scannerContainer').classList.add('active');
-    state.scannerActive=true;
-    document.getElementById('btnScanner').textContent='✕';
-
-    const canvas=document.createElement('canvas');
-    const ctx=canvas.getContext('2d');
-
-    video.addEventListener('loadeddata', ()=>{
-      state.scanInterval=setInterval(()=>{
-        if(!video.videoWidth) return;
-        canvas.width=video.videoWidth;
-        canvas.height=video.videoHeight;
-        ctx.drawImage(video,0,0);
-        const img=ctx.getImageData(0,0,canvas.width,canvas.height);
-        const code=jsQR(img.data,img.width,img.height,{inversionAttempts:'attemptBoth'});
-        if(code&&code.data){
-          clearInterval(state.scanInterval);
-          buscarPorQR(code.data);
-        }
-      },400);
-    });
+    const bitmap = await createImageBitmap(file);
+    const canvas = document.createElement('canvas');
+    canvas.width = bitmap.width;
+    canvas.height = bitmap.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(bitmap, 0, 0);
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const code = jsQR(imageData.data, imageData.width, imageData.height, {inversionAttempts: 'attemptBoth'});
+    input.value = '';
+    if (code && code.data) {
+      buscarPorQR(code.data);
+    } else {
+      showToast('No se detectó QR — intenta de nuevo', 'error');
+    }
+  } catch(e) {
+    showToast('Error al procesar imagen', 'error');
+  }
+}
 
   } catch(e){ showToast('No se pudo acceder a la cámara','error'); }
 }

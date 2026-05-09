@@ -19,6 +19,7 @@ app.use('/api/clientes',  require('./routes/clientes'));
 app.use('/api/visitas',   require('./routes/visitas'));
 app.use('/api/canjes',    require('./routes/canjes'));
 app.use('/api/webhook',   require('./routes/webhook'));
+app.use('/cliente',       require('./routes/tarjeta'));
 
 app.get('/health', (_, res) => res.json({ ok: true, version: '1.0.0' }));
 

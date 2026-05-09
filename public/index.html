@@ -130,12 +130,19 @@
     <div class="search-row">
       <input type="tel" id="phoneInput" placeholder="Teléfono del cliente" maxlength="15"
              onkeydown="if(event.key==='Enter')buscarCliente()">
-      <button class="btn-outline" onclick="document.getElementById('qrInput').click()" id="btnScanner" title="Escanear QR">📷</button>
-      <input type="file" id="qrInput" accept="image/*" style="display:none" onchange="escanearFoto(this)">
+      <button class="btn-outline" onclick="toggleScanner()" id="btnScanner" title="Escanear QR">📷</button>
       <button class="btn-gold" onclick="buscarCliente()" id="btnBuscar">BUSCAR</button>
     </div>
   </div>
 
+  <div class="scanner-container" id="scannerContainer">
+    <video id="qr-video" autoplay muted playsinline></video>
+    <div class="scanner-overlay">
+      <div class="scanner-frame"></div>
+      <div class="scanner-line"></div>
+    </div>
+    <button class="btn-close-scanner" onclick="closeScanner()">✕ Cerrar</button>
+  </div>
 
   <div class="empty-state" id="emptyState">
     <div class="empty-icon">✂</div>
@@ -199,28 +206,23 @@
       <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--gold);margin-bottom:6px">REGISTRAR CLIENTE</div>
       <div style="font-size:13px;color:var(--gray);line-height:1.6">El sistema genera un QR único automáticamente para cada cliente.</div>
     </div>
-
     <div class="form-group">
       <div class="section-label">Nombre completo *</div>
       <input type="text" id="newNombre" placeholder="Ej: Carlos Ramírez">
     </div>
-
     <div class="form-group">
       <div class="section-label">Teléfono *</div>
       <input type="tel" id="newTelefono" placeholder="Ej: 4421234567">
     </div>
-
     <div class="form-group">
       <div class="section-label">Alias / Apodo (opcional)</div>
       <input type="text" id="newAlias" placeholder="Ej: Carlos hijo, Jr, el de la barba">
-      <div class="form-note">💡 Útil cuando varios clientes comparten teléfono — por ejemplo papá e hijo. El alias se agrega al nombre para diferenciarlos.</div>
+      <div class="form-note">💡 Útil cuando varios clientes comparten teléfono — por ejemplo papá e hijo.</div>
     </div>
-
     <div class="form-group">
       <div class="section-label">Email (opcional)</div>
       <input type="text" id="newEmail" placeholder="correo@ejemplo.com">
     </div>
-
     <button class="btn-full" id="btnRegistrarCliente" onclick="registrarNuevoCliente()">REGISTRAR CLIENTE</button>
   </div>
 </div>
@@ -240,7 +242,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const API = 'https://hunterblade-backend-production.up.railway.app';
+const API = '';
 const SERVICIOS = [
   {id:'c98fcba5-27d6-46ee-b0c7-2c8b2b63f77c',nombre:'Corte de cabello',precio:'$180'},
   {id:'c0114768-149b-4f96-82b8-d28ef554b949',nombre:'Corte de niño',precio:'$150'},
@@ -271,7 +273,7 @@ async function buscarCliente() {
     const res = await fetch(`${API}/api/clientes/tel/${encodeURIComponent(tel)}`);
     const data = await res.json();
     if(!res.ok){
-      showToast('Cliente no encontrado — regístralo en "Nuevo Cliente"','error');
+      showToast('Cliente no encontrado — regístralo en Nuevo Cliente','error');
       document.getElementById('clientCard').classList.remove('visible');
       document.getElementById('emptyState').style.display='block';
       return;
@@ -301,12 +303,10 @@ function mostrarCliente(data) {
   document.getElementById('emptyState').style.display='none';
   document.getElementById('clientCard').classList.add('visible');
 
-  // QR
   const qrBox = document.getElementById('qrDisplay');
   qrBox.innerHTML='';
   new QRCode(qrBox,{text:cliente.qr_code,width:80,height:80,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M});
 
-  // Sellos
   const actuales = sellos?.caducado ? 0 : (sellos?.actuales||0);
   const grid = document.getElementById('stampsGrid');
   grid.innerHTML='';
@@ -323,7 +323,6 @@ function mostrarCliente(data) {
     nextEl.innerHTML=`<strong>${sellos.proximo_umbral.descripcion}</strong>Faltan ${sellos.proximo_umbral.faltan} visita${sellos.proximo_umbral.faltan!==1?'s':''}`;
   } else nextEl.innerHTML='';
 
-  // Recompensa
   const banner=document.getElementById('rewardBanner');
   if(recompensa_disponible){
     state.canjeId=recompensa_disponible.id;
@@ -351,37 +350,46 @@ function mostrarCliente(data) {
   }
 }
 
-// SCANNER
-function toggleScanner() {
-  document.getElementById('qrInput').click();
-}
+async function toggleScanner() {
+  if(state.scannerActive){ closeScanner(); return; }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+    state.scannerStream=stream;
+    const video=document.getElementById('qr-video');
+    video.srcObject=stream;
+    document.getElementById('scannerContainer').classList.add('active');
+    state.scannerActive=true;
+    document.getElementById('btnScanner').textContent='✕';
 
-async function escanearFoto(input) {
-  const file = input.files[0];
-  if (!file) return;
-  
-  const img = new Image();
-  const url = URL.createObjectURL(file);
-  img.onload = () => {
-    const canvas = document.createElement('canvas');
-    canvas.width = img.width;
-    canvas.height = img.height;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(img, 0, 0);
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const code = jsQR(imageData.data, imageData.width, imageData.height, {inversionAttempts: 'attemptBoth'});
-    URL.revokeObjectURL(url);
-    if (code && code.data) {
-      buscarPorQR(code.data);
-    } else {
-      showToast('No se detectó QR — intenta de nuevo', 'error');
-    }
-    input.value = '';
-  };
-  img.src = url;
-}
+    const canvas=document.createElement('canvas');
+    const ctx=canvas.getContext('2d');
+
+    video.addEventListener('loadeddata', ()=>{
+      state.scanInterval=setInterval(()=>{
+        if(!video.videoWidth) return;
+        canvas.width=video.videoWidth;
+        canvas.height=video.videoHeight;
+        ctx.drawImage(video,0,0);
+        const img=ctx.getImageData(0,0,canvas.width,canvas.height);
+        const code=jsQR(img.data,img.width,img.height,{inversionAttempts:'attemptBoth'});
+        if(code&&code.data){
+          clearInterval(state.scanInterval);
+          buscarPorQR(code.data);
+        }
+      },400);
+    });
 
   } catch(e){ showToast('No se pudo acceder a la cámara','error'); }
+}
+
+function closeScanner() {
+  if(state.scannerStream) state.scannerStream.getTracks().forEach(t=>t.stop());
+  if(state.scanInterval) clearInterval(state.scanInterval);
+  state.scannerStream=null; state.scanInterval=null;
+  document.getElementById('scannerContainer').classList.remove('active');
+  document.getElementById('qr-video').srcObject=null;
+  state.scannerActive=false;
+  document.getElementById('btnScanner').textContent='📷';
 }
 
 function renderServicios() {

@@ -1,1 +1,480 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Hunter Blade — Panel del Barbero</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --bg:#0a0a0a; --surface:#141414; --border:#222;
+    --gold:#c9a84c; --gold-dim:#7a6230; --white:#f0ede6;
+    --gray:#666; --green:#2d6a4f; --green-lt:#52b788;
+    --red-lt:#e63946; --purple:#c77dff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{background:var(--bg);color:var(--white);font-family:'DM Sans',sans-serif;min-height:100vh;max-width:430px;margin:0 auto}
+  header{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 14px;border-bottom:1px solid var(--border)}
+  .logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:var(--gold)}
+  .logo span{color:var(--white)}
+  .status-dot{width:8px;height:8px;border-radius:50%;background:var(--green-lt);box-shadow:0 0 8px var(--green-lt);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .tabs{display:flex;border-bottom:1px solid var(--border)}
+  .tab{flex:1;padding:12px;text-align:center;font-size:12px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:var(--gray);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
+  .tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+  .panel{display:none}.panel.active{display:block}
+  .search-section{padding:20px 20px 0}
+  .section-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:10px}
+  .search-row{display:flex;gap:8px}
+  input{flex:1;background:var(--surface);border:1px solid var(--border);color:var(--white);padding:14px 16px;font-size:16px;font-family:'DM Sans',sans-serif;border-radius:8px;outline:none;transition:border-color .2s;width:100%}
+  input:focus{border-color:var(--gold)}input::placeholder{color:var(--gray)}
+  .btn-gold{background:var(--gold);color:#000;border:none;padding:14px 18px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;border-radius:8px;cursor:pointer;white-space:nowrap}
+  .btn-gold:active{opacity:.8}.btn-gold:disabled{opacity:.3;cursor:not-allowed}
+  .btn-outline{background:transparent;color:var(--gold);border:1px solid var(--gold-dim);padding:14px 16px;font-size:18px;border-radius:8px;cursor:pointer;transition:all .2s}
+  .btn-outline:active{background:var(--gold-dim)}
+  .scanner-container{margin:16px 20px 0;border-radius:12px;overflow:hidden;position:relative;display:none;background:#000;aspect-ratio:1}
+  .scanner-container.active{display:block}
+  #qr-video{width:100%;height:100%;object-fit:cover}
+  .scanner-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+  .scanner-frame{width:60%;aspect-ratio:1;border:2px solid var(--gold);border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.5)}
+  .scanner-line{position:absolute;width:60%;height:2px;background:var(--gold);opacity:.8;animation:scan 2s linear infinite}
+  @keyframes scan{0%{top:20%}100%{top:80%}}
+  .btn-close-scanner{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.7);border:1px solid var(--border);color:var(--white);padding:8px 12px;border-radius:6px;font-size:13px;cursor:pointer}
+  .empty-state{text-align:center;padding:60px 20px;color:var(--gray)}
+  .empty-icon{font-size:48px;margin-bottom:12px;opacity:.3}
+  .empty-state p{font-size:14px;line-height:1.6}
+  .client-card{margin:20px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:none}
+  .client-card.visible{display:block;animation:slideUp .3s ease}
+  @keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  .card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+  .card-header-info{flex:1}
+  .client-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px}
+  .client-phone{font-size:12px;color:var(--gray);margin-top:2px}
+  .nivel-badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;background:var(--gold-dim);color:var(--gold);border:1px solid var(--gold-dim);white-space:nowrap}
+  .qr-section{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px}
+  .qr-box{background:#fff;padding:8px;border-radius:8px;flex-shrink:0}
+  .qr-box canvas,.qr-box img{display:block}
+  .qr-info{flex:1}
+  .stamps-section{padding:20px;border-bottom:1px solid var(--border)}
+  .stamps-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:12px}
+  .stamp{aspect-ratio:1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;border:1px solid var(--border);background:var(--bg);color:var(--gray)}
+  .stamp.filled{background:var(--gold-dim);border-color:var(--gold);color:var(--gold)}
+  .stamp.reward{background:var(--green);border-color:var(--green-lt);color:var(--green-lt);font-size:14px}
+  .stamp.reward-2{background:#4a1942;border-color:var(--purple);color:var(--purple);font-size:14px}
+  .stamps-info{display:flex;align-items:center;justify-content:space-between}
+  .stamps-count{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--gold);line-height:1}
+  .stamps-count span{font-size:14px;color:var(--gray);font-family:'DM Sans',sans-serif;font-weight:400}
+  .next-reward{font-size:12px;color:var(--gray);text-align:right}
+  .next-reward strong{color:var(--white);display:block}
+  .reward-banner{margin:0 20px;padding:14px 16px;background:linear-gradient(135deg,#1a3a2a,#0d2018);border:1px solid var(--green-lt);border-radius:10px;display:none}
+  .reward-banner.visible{display:flex;align-items:center;gap:12px}
+  .reward-banner.purple{background:linear-gradient(135deg,#2a1a3a,#180d20);border-color:var(--purple)}
+  .reward-icon{font-size:24px}
+  .reward-text{flex:1}
+  .reward-title{font-weight:600;font-size:14px;color:var(--green-lt)}
+  .reward-banner.purple .reward-title{color:var(--purple)}
+  .reward-subtitle{font-size:12px;color:var(--gray);margin-top:2px}
+  .btn-canjear{background:var(--green-lt);color:#000;border:none;padding:8px 14px;border-radius:6px;font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap}
+  .reward-banner.purple .btn-canjear{background:var(--purple)}
+  .service-section{padding:20px}
+  .service-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+  .service-btn{background:var(--bg);border:1px solid var(--border);color:var(--white);padding:14px 12px;border-radius:8px;cursor:pointer;text-align:left;transition:all .15s}
+  .service-btn.selected{border-color:var(--gold);background:#1a1608}
+  .service-btn-name{font-size:13px;font-weight:500}
+  .service-btn-price{font-size:12px;color:var(--gold);margin-top:4px}
+  .btn-full{width:100%;background:var(--gold);color:#000;border:none;padding:16px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;border-radius:8px;cursor:pointer}
+  .btn-full:disabled{opacity:.3;cursor:not-allowed}
+  .history-section{padding:0 20px 20px}
+  .history-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+  .history-item:last-child{border-bottom:none}
+  .history-sello{width:28px;height:28px;border-radius:50%;background:var(--gold-dim);color:var(--gold);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
+  .history-info{flex:1;padding:0 12px}
+  .history-servicio{font-size:13px;font-weight:500}
+  .history-fecha{font-size:11px;color:var(--gray);margin-top:2px}
+  .new-client-form{padding:20px;display:flex;flex-direction:column;gap:14px}
+  .form-group{display:flex;flex-direction:column;gap:6px}
+  .form-note{font-size:12px;color:var(--gray);line-height:1.5}
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:200;padding:20px}
+  .modal-overlay.active{display:flex}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;width:100%;max-width:340px;text-align:center}
+  .modal-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--gold);margin-bottom:8px}
+  .modal-text{font-size:14px;color:var(--gray);margin-bottom:20px;line-height:1.6}
+  .modal-actions{display:flex;gap:10px}
+  .btn-cancel{flex:1;background:transparent;border:1px solid var(--border);color:var(--gray);padding:12px;border-radius:8px;font-size:14px;cursor:pointer}
+  .btn-confirm{flex:2;background:var(--gold);border:none;color:#000;padding:12px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;cursor:pointer}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface);border:1px solid var(--border);padding:14px 20px;border-radius:10px;font-size:14px;white-space:nowrap;transition:transform .3s ease;z-index:100}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+  .toast.success{border-color:var(--green-lt)}.toast.error{border-color:var(--red-lt)}
+  .loading{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle}
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
 
+<header>
+  <div class="logo">HUNTER <span>BLADE</span></div>
+  <div class="status-dot"></div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('buscar')">🔍 Buscar Cliente</div>
+  <div class="tab" onclick="switchTab('nuevo')">➕ Nuevo Cliente</div>
+</div>
+
+<!-- PANEL BUSCAR -->
+<div class="panel active" id="panel-buscar">
+  <div class="search-section">
+    <div class="section-label">Buscar por teléfono o QR</div>
+    <div class="search-row">
+      <input type="tel" id="phoneInput" placeholder="Teléfono del cliente" maxlength="15"
+             onkeydown="if(event.key==='Enter')buscarCliente()">
+      <button class="btn-outline" onclick="toggleScanner()" id="btnScanner" title="Escanear QR">📷</button>
+      <button class="btn-gold" onclick="buscarCliente()" id="btnBuscar">BUSCAR</button>
+    </div>
+  </div>
+
+  <div class="scanner-container" id="scannerContainer">
+    <video id="qr-video" autoplay muted playsinline></video>
+    <div class="scanner-overlay">
+      <div class="scanner-frame"></div>
+      <div class="scanner-line"></div>
+    </div>
+    <button class="btn-close-scanner" onclick="closeScanner()">✕ Cerrar</button>
+  </div>
+
+  <div class="empty-state" id="emptyState">
+    <div class="empty-icon">✂</div>
+    <p>Ingresa el teléfono del cliente<br>o escanea su código QR</p>
+  </div>
+
+  <div class="client-card" id="clientCard">
+    <div class="card-header">
+      <div class="card-header-info">
+        <div class="client-name" id="clientName">—</div>
+        <div class="client-phone" id="clientPhone">—</div>
+      </div>
+      <div class="nivel-badge">Nuevo</div>
+    </div>
+
+    <div class="qr-section">
+      <div class="qr-box" id="qrDisplay"></div>
+      <div class="qr-info">
+        <div class="section-label" style="margin-bottom:4px">QR del cliente</div>
+        <div style="font-size:13px;color:var(--white);margin-top:2px;line-height:1.5">
+          El cliente guarda este QR en su Wallet para identificarse
+        </div>
+      </div>
+    </div>
+
+    <div class="stamps-section">
+      <div class="section-label">Sellos acumulados</div>
+      <div class="stamps-grid" id="stampsGrid"></div>
+      <div class="stamps-info">
+        <div class="stamps-count" id="stampsCount">0 <span>/ 11</span></div>
+        <div class="next-reward" id="nextRewardInfo"></div>
+      </div>
+    </div>
+
+    <div class="reward-banner" id="rewardBanner">
+      <div class="reward-icon">🎁</div>
+      <div class="reward-text">
+        <div class="reward-title" id="rewardTitle"></div>
+        <div class="reward-subtitle" id="rewardSubtitle"></div>
+      </div>
+      <button class="btn-canjear" id="btnCanjear" onclick="aplicarCanje()">CANJEAR</button>
+    </div>
+
+    <div class="service-section">
+      <div class="section-label">Registrar visita</div>
+      <div class="service-grid" id="serviceGrid"></div>
+      <button class="btn-full" id="btnRegistrar" disabled onclick="registrarVisita()">REGISTRAR VISITA</button>
+    </div>
+
+    <div class="history-section">
+      <div class="section-label" style="margin-bottom:10px">Últimas visitas</div>
+      <div id="historialList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL NUEVO CLIENTE -->
+<div class="panel" id="panel-nuevo">
+  <div class="new-client-form">
+    <div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--gold);margin-bottom:6px">REGISTRAR CLIENTE</div>
+      <div style="font-size:13px;color:var(--gray);line-height:1.6">El sistema genera un QR único automáticamente para cada cliente.</div>
+    </div>
+
+    <div class="form-group">
+      <div class="section-label">Nombre completo *</div>
+      <input type="text" id="newNombre" placeholder="Ej: Carlos Ramírez">
+    </div>
+
+    <div class="form-group">
+      <div class="section-label">Teléfono *</div>
+      <input type="tel" id="newTelefono" placeholder="Ej: 4421234567">
+    </div>
+
+    <div class="form-group">
+      <div class="section-label">Alias / Apodo (opcional)</div>
+      <input type="text" id="newAlias" placeholder="Ej: Carlos hijo, Jr, el de la barba">
+      <div class="form-note">💡 Útil cuando varios clientes comparten teléfono — por ejemplo papá e hijo. El alias se agrega al nombre para diferenciarlos.</div>
+    </div>
+
+    <div class="form-group">
+      <div class="section-label">Email (opcional)</div>
+      <input type="text" id="newEmail" placeholder="correo@ejemplo.com">
+    </div>
+
+    <button class="btn-full" id="btnRegistrarCliente" onclick="registrarNuevoCliente()">REGISTRAR CLIENTE</button>
+  </div>
+</div>
+
+<!-- MODAL CANJE -->
+<div class="modal-overlay" id="modalCanje">
+  <div class="modal">
+    <div class="modal-title">Confirmar canje</div>
+    <div class="modal-text" id="modalCanjeText"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-confirm" onclick="confirmarCanje()">APLICAR</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://hunterblade-backend-production.up.railway.app';
+const SERVICIOS = [
+  {id:'c98fcba5-27d6-46ee-b0c7-2c8b2b63f77c',nombre:'Corte de cabello',precio:'$180'},
+  {id:'c0114768-149b-4f96-82b8-d28ef554b949',nombre:'Corte de niño',precio:'$150'},
+  {id:'b9f4fb52-a20f-4a1e-aaad-a8467476a559',nombre:'Arreglo de barba',precio:'$120'},
+  {id:'42c2d322-e81e-4871-abd2-271551f9fceb',nombre:'Corte + Barba',precio:'$280'},
+];
+const SUCURSAL_ID = '4136bcb4-1a58-4fd7-b8c7-f3e54bf533d5';
+
+let state = {
+  cliente:null, sellos:null, recompensa:null,
+  servicioSeleccionado:null, canjeId:null,
+  scannerActive:false, scannerStream:null, scanInterval:null,
+};
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active',(i===0&&tab==='buscar')||(i===1&&tab==='nuevo')));
+  document.getElementById('panel-buscar').classList.toggle('active',tab==='buscar');
+  document.getElementById('panel-nuevo').classList.toggle('active',tab==='nuevo');
+  if(tab!=='buscar') closeScanner();
+}
+
+async function buscarCliente() {
+  const tel = document.getElementById('phoneInput').value.trim();
+  if(!tel) return showToast('Ingresa un número de teléfono','error');
+  const btn = document.getElementById('btnBuscar');
+  btn.innerHTML='<span class="loading"></span>'; btn.disabled=true;
+  try {
+    const res = await fetch(`${API}/api/clientes/tel/${encodeURIComponent(tel)}`);
+    const data = await res.json();
+    if(!res.ok){
+      showToast('Cliente no encontrado — regístralo en "Nuevo Cliente"','error');
+      document.getElementById('clientCard').classList.remove('visible');
+      document.getElementById('emptyState').style.display='block';
+      return;
+    }
+    mostrarCliente(data);
+  } catch(e){ showToast('Error de conexión','error'); }
+  finally{ btn.innerHTML='BUSCAR'; btn.disabled=false; }
+}
+
+async function buscarPorQR(qrCode) {
+  try {
+    const res = await fetch(`${API}/api/clientes/qr/${encodeURIComponent(qrCode)}`);
+    const data = await res.json();
+    if(!res.ok){ showToast('QR no reconocido','error'); return; }
+    mostrarCliente(data);
+    closeScanner();
+    showToast('✓ Cliente encontrado','success');
+  } catch(e){ showToast('Error de conexión','error'); }
+}
+
+function mostrarCliente(data) {
+  const {cliente, sellos, recompensa_disponible, historial} = data;
+  state.cliente=cliente; state.sellos=sellos; state.recompensa=recompensa_disponible;
+
+  document.getElementById('clientName').textContent = cliente.nombre;
+  document.getElementById('clientPhone').textContent = cliente.telefono;
+  document.getElementById('emptyState').style.display='none';
+  document.getElementById('clientCard').classList.add('visible');
+
+  // QR
+  const qrBox = document.getElementById('qrDisplay');
+  qrBox.innerHTML='';
+  new QRCode(qrBox,{text:cliente.qr_code,width:80,height:80,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M});
+
+  // Sellos
+  const actuales = sellos?.caducado ? 0 : (sellos?.actuales||0);
+  const grid = document.getElementById('stampsGrid');
+  grid.innerHTML='';
+  for(let i=1;i<=11;i++){
+    const s=document.createElement('div');
+    if(i===7){ s.className='stamp'+(actuales>=7?' reward':''); s.textContent=actuales>=7?'★':'7'; }
+    else if(i===11){ s.className='stamp'+(actuales>=11?' reward-2':''); s.textContent=actuales>=11?'★':'11'; }
+    else{ s.className='stamp'+(i<=actuales?' filled':''); s.textContent=i; }
+    grid.appendChild(s);
+  }
+  document.getElementById('stampsCount').innerHTML=`${actuales} <span>/ 11</span>`;
+  const nextEl=document.getElementById('nextRewardInfo');
+  if(sellos?.proximo_umbral){
+    nextEl.innerHTML=`<strong>${sellos.proximo_umbral.descripcion}</strong>Faltan ${sellos.proximo_umbral.faltan} visita${sellos.proximo_umbral.faltan!==1?'s':''}`;
+  } else nextEl.innerHTML='';
+
+  // Recompensa
+  const banner=document.getElementById('rewardBanner');
+  if(recompensa_disponible){
+    state.canjeId=recompensa_disponible.id;
+    const isPaquete=recompensa_disponible.tipo_recompensa==='paquete_gratis';
+    banner.className='reward-banner visible'+(isPaquete?' purple':'');
+    document.getElementById('rewardTitle').textContent=recompensa_disponible.descripcion;
+    document.getElementById('rewardSubtitle').textContent=`Valor: $${recompensa_disponible.monto_valor} • Toca para aplicar`;
+  } else { banner.className='reward-banner'; state.canjeId=null; }
+
+  renderServicios();
+
+  const hist=document.getElementById('historialList');
+  if(historial?.length>0){
+    hist.innerHTML=historial.slice(0,5).map(v=>`
+      <div class="history-item">
+        <div class="history-sello">${v.numero_sello}</div>
+        <div class="history-info">
+          <div class="history-servicio">${v.servicio}</div>
+          <div class="history-fecha">${formatFecha(v.fecha)}</div>
+        </div>
+        <div>${v.es_canje?'🎁':''}</div>
+      </div>`).join('');
+  } else {
+    hist.innerHTML='<div style="color:var(--gray);font-size:13px;padding:10px 0">Sin visitas registradas</div>';
+  }
+}
+
+// SCANNER
+async function toggleScanner() {
+  if(state.scannerActive){ closeScanner(); return; }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+    state.scannerStream=stream;
+    const video=document.getElementById('qr-video');
+    video.srcObject=stream;
+    document.getElementById('scannerContainer').classList.add('active');
+    state.scannerActive=true;
+    document.getElementById('btnScanner').textContent='✕';
+    if('BarcodeDetector' in window){
+      const detector=new BarcodeDetector({formats:['qr_code']});
+      state.scanInterval=setInterval(async()=>{
+        try{
+          const codes=await detector.detect(video);
+          if(codes.length>0){ clearInterval(state.scanInterval); await buscarPorQR(codes[0].rawValue); }
+        }catch(e){}
+      },500);
+    } else {
+      showToast('Cámara activa — escáner QR no disponible en este navegador','');
+    }
+  } catch(e){ showToast('No se pudo acceder a la cámara','error'); }
+}
+
+function closeScanner() {
+  if(state.scannerStream) state.scannerStream.getTracks().forEach(t=>t.stop());
+  if(state.scanInterval) clearInterval(state.scanInterval);
+  state.scannerStream=null; state.scanInterval=null;
+  document.getElementById('scannerContainer').classList.remove('active');
+  document.getElementById('qr-video').srcObject=null;
+  state.scannerActive=false;
+  document.getElementById('btnScanner').textContent='📷';
+}
+
+function renderServicios() {
+  document.getElementById('serviceGrid').innerHTML=SERVICIOS.map(s=>`
+    <button class="service-btn ${state.servicioSeleccionado===s.id?'selected':''}" onclick="seleccionarServicio('${s.id}')">
+      <div class="service-btn-name">${s.nombre}</div>
+      <div class="service-btn-price">${s.precio}</div>
+    </button>`).join('');
+}
+
+function seleccionarServicio(id){
+  state.servicioSeleccionado=id;
+  renderServicios();
+  document.getElementById('btnRegistrar').disabled=false;
+}
+
+async function registrarVisita() {
+  if(!state.servicioSeleccionado) return;
+  const btn=document.getElementById('btnRegistrar');
+  btn.innerHTML='<span class="loading"></span> REGISTRANDO...'; btn.disabled=true;
+  try {
+    const res=await fetch(`${API}/api/visitas`,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({cliente_id:state.cliente.id,sucursal_id:SUCURSAL_ID,servicio_id:state.servicioSeleccionado})});
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.error);
+    let msg=`✓ Sello #${data.sellos_actuales} registrado`;
+    if(data.recompensa_generada) msg=`🎁 ¡Sello #${data.sellos_actuales}! ${data.recompensa_generada.descripcion}`;
+    showToast(msg,'success');
+    state.servicioSeleccionado=null;
+    setTimeout(()=>buscarCliente(),600);
+  } catch(e){ showToast(e.message||'Error al registrar','error'); btn.disabled=false; }
+  finally{ btn.innerHTML='REGISTRAR VISITA'; }
+}
+
+function aplicarCanje() {
+  if(!state.canjeId||!state.recompensa) return;
+  document.getElementById('modalCanjeText').textContent=
+    `¿Confirmas aplicar "${state.recompensa.descripcion}" por un valor de $${state.recompensa.monto_valor}?`;
+  document.getElementById('modalCanje').classList.add('active');
+}
+function closeModal(){ document.getElementById('modalCanje').classList.remove('active'); }
+
+async function confirmarCanje() {
+  closeModal();
+  const btn=document.getElementById('btnCanjear');
+  btn.textContent='...'; btn.disabled=true;
+  try {
+    const res=await fetch(`${API}/api/canjes/${state.canjeId}/aplicar`,{method:'POST',
+      headers:{'Content-Type':'application/json'},body:JSON.stringify({sucursal_id:SUCURSAL_ID})});
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.error);
+    showToast('🎁 Recompensa aplicada correctamente','success');
+    setTimeout(()=>buscarCliente(),600);
+  } catch(e){ showToast(e.message||'Error al canjear','error'); }
+  finally{ btn.textContent='CANJEAR'; btn.disabled=false; }
+}
+
+async function registrarNuevoCliente() {
+  const nombre=document.getElementById('newNombre').value.trim();
+  const telefono=document.getElementById('newTelefono').value.trim();
+  const alias=document.getElementById('newAlias').value.trim();
+  const email=document.getElementById('newEmail').value.trim();
+  if(!nombre) return showToast('El nombre es requerido','error');
+  if(!telefono) return showToast('El teléfono es requerido','error');
+  const btn=document.getElementById('btnRegistrarCliente');
+  btn.innerHTML='<span class="loading"></span> REGISTRANDO...'; btn.disabled=true;
+  const nombreFinal=alias?`${nombre} (${alias})`:nombre;
+  try {
+    const res=await fetch(`${API}/api/clientes`,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({nombre:nombreFinal,telefono,email:email||null})});
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.error);
+    showToast(`✓ ${nombreFinal} registrado`,'success');
+    ['newNombre','newTelefono','newAlias','newEmail'].forEach(id=>document.getElementById(id).value='');
+    setTimeout(()=>{ switchTab('buscar'); document.getElementById('phoneInput').value=telefono; buscarCliente(); },800);
+  } catch(e){ showToast(e.message||'Error al registrar','error'); }
+  finally{ btn.innerHTML='REGISTRAR CLIENTE'; btn.disabled=false; }
+}
+
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className=`toast ${type} show`;
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+function formatFecha(iso){ return new Date(iso).toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric'}); }
+</script>
+</body>
+</html>

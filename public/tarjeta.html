@@ -205,9 +205,35 @@
     document.getElementById('mainContent').style.display = 'block';
   }
 
+  function actualizarSellos(data) {
+  const { sellos, recompensa_disponible } = data;
+  const actuales = sellos?.caducado ? 0 : (sellos?.actuales || 0);
+  document.querySelectorAll('.sello').forEach((s, i) => {
+    const num = i + 1;
+    if (num === 7) {
+      s.className = 'sello' + (actuales >= 7 ? ' premio' : '');
+      s.textContent = actuales >= 7 ? '★' : '7';
+    } else if (num === 11) {
+      s.className = 'sello' + (actuales >= 11 ? ' premio2' : '');
+      s.textContent = actuales >= 11 ? '★' : '11';
+    } else {
+      s.className = 'sello' + (num <= actuales ? ' lleno' : '');
+    }
+  });
+  document.getElementById('progresoNum').innerHTML = `${actuales} <span>/ 11</span>`;
+}
   cargar();
-  // Actualizar cada 30 segundos
-  setInterval(cargar, 30000);
+  // Actualizar cada 30 segundos sin regenerar el QR
+setInterval(async () => {
+  try {
+    const res = await fetch(`${API}/api/clientes/qr/${qrCode}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    // Solo actualizar sellos y recompensa, no el QR
+    actualizarSellos(data);
+  } catch(e) {}
+}, 30000);
+  
 </script>
 </body>
 </html>

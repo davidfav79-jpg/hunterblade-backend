@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Hunter Blade">
+<meta name="theme-color" content="#0a0a0a">
+<title>Hunter Blade — Mi Tarjeta</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --bg:#0a0a0a; --surface:#141414; --border:#222;
+    --gold:#c9a84c; --gold-dim:#7a6230; --white:#f0ede6;
+    --gray:#555; --green:#2d6a4f; --green-lt:#52b788;
+    --purple:#c77dff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{background:var(--bg);color:var(--white);font-family:'DM Sans',sans-serif;min-height:100vh;max-width:390px;margin:0 auto;padding-bottom:40px}
+
+  /* HEADER */
+  .hdr{padding:24px 24px 0;display:flex;align-items:center;justify-content:space-between}
+  .logo{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;color:var(--gold)}
+  .logo span{color:var(--white)}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--green-lt);box-shadow:0 0 8px var(--green-lt);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+  /* CARD */
+  .card{margin:20px 16px;background:linear-gradient(145deg,#1a1608,#0f0d06);border:1px solid var(--gold-dim);border-radius:20px;overflow:hidden;position:relative}
+  .card::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at top right,rgba(201,168,76,.08),transparent 60%);pointer-events:none}
+  .card-top{padding:24px 24px 16px;display:flex;align-items:flex-start;justify-content:space-between}
+  .card-name{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--white);line-height:1.1;max-width:200px}
+  .card-sub{font-size:12px;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-top:4px}
+  .nivel-badge{padding:6px 12px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;background:rgba(201,168,76,.15);color:var(--gold);border:1px solid var(--gold-dim)}
+
+  /* QR */
+  .qr-wrap{padding:0 24px 20px;display:flex;align-items:center;gap:20px}
+  .qr-box{background:#fff;padding:10px;border-radius:12px;flex-shrink:0}
+  .qr-box canvas,.qr-box img{display:block}
+  .qr-hint{font-size:12px;color:var(--gray);line-height:1.6}
+  .qr-hint strong{color:var(--white);display:block;font-size:13px;margin-bottom:4px}
+
+  /* SELLOS */
+  .sellos-section{padding:20px 24px}
+  .sellos-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:14px}
+  .sellos-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:14px}
+  .sello{aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;border:1px solid #2a2a2a;background:#111;color:#444;transition:all .3s}
+  .sello.lleno{background:var(--gold-dim);border-color:var(--gold);color:var(--gold)}
+  .sello.premio{background:var(--green);border-color:var(--green-lt);color:var(--green-lt);font-size:16px}
+  .sello.premio2{background:#3a1045;border-color:var(--purple);color:var(--purple);font-size:16px}
+
+  .progreso{display:flex;align-items:center;justify-content:space-between}
+  .progreso-num{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--gold);line-height:1}
+  .progreso-num span{font-size:16px;color:var(--gray);font-family:'DM Sans',sans-serif;font-weight:400}
+  .proximo{font-size:12px;color:var(--gray);text-align:right;line-height:1.5}
+  .proximo strong{color:var(--white);display:block;font-size:13px}
+
+  /* RECOMPENSA */
+  .recompensa{margin:0 16px 16px;padding:16px;background:linear-gradient(135deg,#1a3a2a,#0d2018);border:1px solid var(--green-lt);border-radius:14px;display:none;align-items:center;gap:14px;animation:slideUp .4s ease}
+  .recompensa.visible{display:flex}
+  .recompensa.purple{background:linear-gradient(135deg,#2a1a3a,#180d20);border-color:var(--purple)}
+  .rec-icon{font-size:28px;flex-shrink:0}
+  .rec-info{flex:1}
+  .rec-title{font-weight:600;font-size:15px;color:var(--green-lt);line-height:1.3}
+  .recompensa.purple .rec-title{color:var(--purple)}
+  .rec-sub{font-size:12px;color:var(--gray);margin-top:3px}
+
+  /* INSTALL HINT */
+  .install-hint{margin:16px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;font-size:12px;color:var(--gray);line-height:1.7;text-align:center}
+  .install-hint strong{color:var(--white);display:block;margin-bottom:4px;font-size:13px}
+
+  /* LOADING */
+  .loading-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px}
+  .spinner{width:32px;height:32px;border:2px solid #222;border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<div class="loading-screen" id="loadingScreen">
+  <div class="spinner"></div>
+  <div style="font-size:13px;color:var(--gray)">Cargando tu tarjeta...</div>
+</div>
+
+<div id="mainContent" style="display:none">
+  <div class="hdr">
+    <div class="logo">HUNTER <span>BLADE</span></div>
+    <div class="dot"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-top">
+      <div>
+        <div class="card-name" id="clientName">—</div>
+        <div class="card-sub">Miembro</div>
+      </div>
+      <div class="nivel-badge" id="nivelBadge">Nuevo</div>
+    </div>
+    <div class="qr-wrap">
+      <div class="qr-box" id="qrBox"></div>
+      <div class="qr-hint">
+        <strong>Tu código QR</strong>
+        Muéstraselo al barbero para registrar tu visita
+      </div>
+    </div>
+  </div>
+
+  <div class="recompensa" id="recompensaBanner">
+    <div class="rec-icon">🎁</div>
+    <div class="rec-info">
+      <div class="rec-title" id="recTitle"></div>
+      <div class="rec-sub" id="recSub"></div>
+    </div>
+  </div>
+
+  <div class="sellos-section">
+    <div class="sellos-label">Mis sellos</div>
+    <div class="sellos-grid" id="sellosGrid"></div>
+    <div class="progreso">
+      <div class="progreso-num" id="progresoNum">0 <span>/ 11</span></div>
+      <div class="proximo" id="proximoInfo"></div>
+    </div>
+  </div>
+
+  <div class="install-hint" id="installHint">
+    <strong>💡 Guarda tu tarjeta</strong>
+    En iPhone: toca <strong>Compartir</strong> → <strong>"Añadir a pantalla de inicio"</strong><br>
+    En Android: toca el menú ⋮ → <strong>"Añadir a pantalla de inicio"</strong>
+  </div>
+</div>
+
+<script>
+  const qrCode = window.location.pathname.split('/').pop();
+  const API = '';  // mismo dominio
+
+  async function cargar() {
+    try {
+      const res = await fetch(`${API}/api/clientes/qr/${qrCode}`);
+      if (!res.ok) throw new Error('not found');
+      const data = await res.json();
+      renderTarjeta(data);
+    } catch(e) {
+      document.getElementById('loadingScreen').innerHTML = `
+        <div style="text-align:center;padding:40px 20px">
+          <div style="font-size:48px;margin-bottom:16px;opacity:.3">✂</div>
+          <p style="color:#666;font-size:14px">Tarjeta no encontrada</p>
+        </div>`;
+    }
+  }
+
+  function renderTarjeta(data) {
+    const { cliente, sellos, recompensa_disponible } = data;
+
+    document.getElementById('clientName').textContent = cliente.nombre;
+    document.title = `${cliente.nombre} — Hunter Blade`;
+
+    // QR
+    new QRCode(document.getElementById('qrBox'), {
+      text: cliente.qr_code,
+      width: 100, height: 100,
+      colorDark: '#000', colorLight: '#fff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+
+    // Sellos
+    const actuales = sellos?.caducado ? 0 : (sellos?.actuales || 0);
+    const grid = document.getElementById('sellosGrid');
+    grid.innerHTML = '';
+    for (let i = 1; i <= 11; i++) {
+      const s = document.createElement('div');
+      if (i === 7) {
+        s.className = 'sello' + (actuales >= 7 ? ' premio' : '');
+        s.textContent = actuales >= 7 ? '★' : '7';
+      } else if (i === 11) {
+        s.className = 'sello' + (actuales >= 11 ? ' premio2' : '');
+        s.textContent = actuales >= 11 ? '★' : '11';
+      } else {
+        s.className = 'sello' + (i <= actuales ? ' lleno' : '');
+        s.textContent = i;
+      }
+      grid.appendChild(s);
+    }
+
+    document.getElementById('progresoNum').innerHTML = `${actuales} <span>/ 11</span>`;
+
+    const prox = sellos?.proximo_umbral;
+    if (prox) {
+      document.getElementById('proximoInfo').innerHTML =
+        `<strong>${prox.descripcion}</strong>Faltan ${prox.faltan} visita${prox.faltan !== 1 ? 's' : ''}`;
+    }
+
+    // Recompensa
+    if (recompensa_disponible) {
+      const isPaquete = recompensa_disponible.tipo_recompensa === 'paquete_gratis';
+      const banner = document.getElementById('recompensaBanner');
+      banner.className = 'recompensa visible' + (isPaquete ? ' purple' : '');
+      document.getElementById('recTitle').textContent = recompensa_disponible.descripcion;
+      document.getElementById('recSub').textContent = `Valor $${recompensa_disponible.monto_valor} • Muéstraselo al barbero`;
+    }
+
+    document.getElementById('loadingScreen').style.display = 'none';
+    document.getElementById('mainContent').style.display = 'block';
+  }
+
+  cargar();
+  // Actualizar cada 30 segundos
+  setInterval(cargar, 30000);
+</script>
+</body>
+</html>

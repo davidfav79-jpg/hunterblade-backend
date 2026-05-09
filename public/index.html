@@ -6,6 +6,7 @@
 <title>Hunter Blade — Panel del Barbero</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/jsqr@1.4.0/dist/jsQR.js"></script>
 <style>
   :root {
     --bg:#0a0a0a; --surface:#141414; --border:#222;
@@ -368,17 +369,24 @@ async function toggleScanner() {
     document.getElementById('scannerContainer').classList.add('active');
     state.scannerActive=true;
     document.getElementById('btnScanner').textContent='✕';
-    if('BarcodeDetector' in window){
-      const detector=new BarcodeDetector({formats:['qr_code']});
-      state.scanInterval=setInterval(async()=>{
-        try{
-          const codes=await detector.detect(video);
-          if(codes.length>0){ clearInterval(state.scanInterval); await buscarPorQR(codes[0].rawValue); }
-        }catch(e){}
-      },500);
-    } else {
-      showToast('Cámara activa — escáner QR no disponible en este navegador','');
-    }
+
+    // Canvas oculto para procesar frames
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    state.scanInterval=setInterval(()=>{
+      if(video.readyState !== video.HAVE_ENOUGH_DATA) return;
+      canvas.width=video.videoWidth;
+      canvas.height=video.videoHeight;
+      ctx.drawImage(video,0,0,canvas.width,canvas.height);
+      const imageData=ctx.getImageData(0,0,canvas.width,canvas.height);
+      const code=jsQR(imageData.data,imageData.width,imageData.height,{inversionAttempts:'dontInvert'});
+      if(code){
+        clearInterval(state.scanInterval);
+        buscarPorQR(code.data);
+      }
+    },300);
+
   } catch(e){ showToast('No se pudo acceder a la cámara','error'); }
 }
 

@@ -362,7 +362,7 @@ function mostrarCliente(data) {
 async function toggleScanner() {
   if(state.scannerActive){ closeScanner(); return; }
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+    const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}}});
     state.scannerStream=stream;
     const video=document.getElementById('qr-video');
     video.srcObject=stream;
@@ -370,23 +370,23 @@ async function toggleScanner() {
     state.scannerActive=true;
     document.getElementById('btnScanner').textContent='✕';
 
-    // Canvas oculto para procesar frames
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    const canvas=document.createElement('canvas');
+    const ctx=canvas.getContext('2d');
 
-    await new Promise(resolve => setTimeout(resolve, 500));
-    state.scanInterval=setInterval(()=>{
-    if(video.readyState < 2) return;
-      canvas.width=video.videoWidth;
-      canvas.height=video.videoHeight;
-      ctx.drawImage(video,0,0,canvas.width,canvas.height);
-      const imageData=ctx.getImageData(0,0,canvas.width,canvas.height);
-      const code=jsQR(imageData.data,imageData.width,imageData.height,{inversionAttempts:'attemptBoth'});
-      if(code){
-        clearInterval(state.scanInterval);
-        buscarPorQR(code.data);
-      }
-    },500);
+    video.addEventListener('loadeddata', ()=>{
+      state.scanInterval=setInterval(()=>{
+        if(!video.videoWidth) return;
+        canvas.width=video.videoWidth;
+        canvas.height=video.videoHeight;
+        ctx.drawImage(video,0,0);
+        const img=ctx.getImageData(0,0,canvas.width,canvas.height);
+        const code=jsQR(img.data,img.width,img.height,{inversionAttempts:'attemptBoth'});
+        if(code&&code.data){
+          clearInterval(state.scanInterval);
+          buscarPorQR(code.data);
+        }
+      },400);
+    });
 
   } catch(e){ showToast('No se pudo acceder a la cámara','error'); }
 }

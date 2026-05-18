@@ -10423,6 +10423,40 @@ function getExifOrientation(buffer) {
   return 1;
 }
 
+function fixOrientation(img, orientation, srcW, srcH) {
+  const rotated = (orientation === 5 || orientation === 6 || orientation === 7 || orientation === 8);
+  const cW = rotated ? srcH : srcW;
+  const cH = rotated ? srcW : srcH;
+  const canvas = document.createElement('canvas');
+  canvas.width = cW; canvas.height = cH;
+  const ctx = canvas.getContext('2d');
+  ctx.save();
+  switch(orientation) {
+    case 6: ctx.translate(cW,0); ctx.rotate(Math.PI/2); ctx.drawImage(img,0,0,srcW,srcH); break;
+    case 8: ctx.translate(0,cH); ctx.rotate(-Math.PI/2); ctx.drawImage(img,0,0,srcW,srcH); break;
+    case 3: ctx.translate(cW,cH); ctx.rotate(Math.PI); ctx.drawImage(img,0,0,srcW,srcH); break;
+    default: ctx.drawImage(img,0,0,srcW,srcH);
+  }
+  ctx.restore();
+  return canvas;
+}
+
+function tryDecode(canvas) {
+  const ctx = canvas.getContext('2d');
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  return jsQR(imageData.data, imageData.width, imageData.height, {inversionAttempts: 'attemptBoth'});
+}
+
+function scaleCanvas(src, maxSize) {
+  const w = src.width, h = src.height;
+  if (w <= maxSize && h <= maxSize) return src;
+  const scale = maxSize / Math.max(w, h);
+  const c = document.createElement('canvas');
+  c.width = Math.round(w * scale); c.height = Math.round(h * scale);
+  c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+  return c;
+}
+
 function procesarImagenQR(input) {
   const file = input.files[0];
   if (!file) return;
@@ -10439,53 +10473,47 @@ function procesarImagenQR(input) {
       img.onload = function() {
         try {
           if (!window.jsQR) { showToast('jsQR no disponible', 'error'); return; }
-          const MAX = 1200;
           const srcW = img.naturalWidth || img.width;
           const srcH = img.naturalHeight || img.height;
-          // For orientation 6 and 8, the image is rotated 90/270 degrees
-          // Canvas dimensions must be swapped
-          const rotated = (orientation === 6 || orientation === 8 || orientation === 5 || orientation === 7);
-          let cW = rotated ? srcH : srcW;
-          let cH = rotated ? srcW : srcH;
-          // Scale down if too large
-          if (cW > MAX || cH > MAX) {
-            const scale = MAX / Math.max(cW, cH);
-            cW = Math.round(cW * scale);
-            cH = Math.round(cH * scale);
+
+          // Step 1: fix orientation
+          const oriented = fixOrientation(img, orientation, srcW, srcH);
+
+          // Step 2: try at multiple scales — full, 1500px, 800px, 400px
+          const scales = [oriented.width, 1500, 800, 400];
+          let code = null;
+          for (const size of scales) {
+            if (code) break;
+            const scaled = scaleCanvas(oriented, size);
+            code = tryDecode(scaled);
           }
-          const canvas = document.createElement('canvas');
-          canvas.width = cW;
-          canvas.height = cH;
-          const ctx = canvas.getContext('2d');
-          ctx.save();
-          // Apply correct rotation for each EXIF orientation
-          switch(orientation) {
-            case 6: // 90 CW
-              ctx.translate(cW, 0);
-              ctx.rotate(Math.PI / 2);
-              ctx.drawImage(img, 0, 0, cH, cW);
-              break;
-            case 8: // 90 CCW
-              ctx.translate(0, cH);
-              ctx.rotate(-Math.PI / 2);
-              ctx.drawImage(img, 0, 0, cH, cW);
-              break;
-            case 3: // 180
-              ctx.translate(cW, cH);
-              ctx.rotate(Math.PI);
-              ctx.drawImage(img, 0, 0, cW, cH);
-              break;
-            default:
-              ctx.drawImage(img, 0, 0, cW, cH);
+
+          // Step 3: if still no result, try scanning tiles (top-left, top-right, center, bottom-left, bottom-right)
+          if (!code) {
+            const c = oriented;
+            const tileSize = Math.min(c.width, c.height) * 0.7;
+            const positions = [
+              [0, 0],
+              [c.width - tileSize, 0],
+              [(c.width - tileSize) / 2, (c.height - tileSize) / 2],
+              [0, c.height - tileSize],
+              [c.width - tileSize, c.height - tileSize],
+            ];
+            for (const [tx, ty] of positions) {
+              if (code) break;
+              const tile = document.createElement('canvas');
+              tile.width = tileSize; tile.height = tileSize;
+              tile.getContext('2d').drawImage(c, tx, ty, tileSize, tileSize, 0, 0, tileSize, tileSize);
+              const scaled = scaleCanvas(tile, 600);
+              code = tryDecode(scaled);
+            }
           }
-          ctx.restore();
-          const imageData = ctx.getImageData(0, 0, cW, cH);
-          const code = jsQR(imageData.data, imageData.width, imageData.height, {inversionAttempts: 'attemptBoth'});
+
           input.value = '';
           if (code && code.data) {
             buscarPorQR(code.data);
           } else {
-            showToast('QR no detectado — intenta de nuevo', 'error');
+            showToast('QR no detectado — acerca más el teléfono', 'error');
           }
         } catch(err) {
           showToast('Error: ' + err.message, 'error');

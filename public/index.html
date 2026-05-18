@@ -361,6 +361,7 @@ async function procesarImagenQR(input) {
   const MAX = 1024;
   let w = img.naturalWidth;
   let h = img.naturalHeight;
+  showToast(`Imagen: ${w}x${h}`, '');
   if (w > MAX || h > MAX) {
     if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
     else { w = Math.round(w * MAX / h); h = MAX; }
@@ -373,11 +374,8 @@ async function procesarImagenQR(input) {
   const imageData = ctx.getImageData(0, 0, w, h);
   const code = jsQR(imageData.data, imageData.width, imageData.height, {inversionAttempts: 'attemptBoth'});
   input.value = '';
-  if (code && code.data) {
-    buscarPorQR(code.data);
-  } else {
-    showToast('No se detectó QR — intenta de nuevo con mejor iluminación', 'error');
-  }
+  showToast(code ? `✓ ${code.data.substring(0,15)}` : `No detectado (${w}x${h})`, code ? 'success' : 'error');
+  if (code && code.data) buscarPorQR(code.data);
 };
     };
     img.onerror = function() { showToast('Error al leer la imagen', 'error'); };

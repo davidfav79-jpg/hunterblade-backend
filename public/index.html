@@ -366,7 +366,9 @@ async function toggleScanner() {
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0);
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      showToast(`Imagen: ${img.width}x${img.height}`, '');
       const code = jsQR(imageData.data, imageData.width, imageData.height, {inversionAttempts: 'attemptBoth'});
+      showToast(`QR: ${code ? code.data.substring(0,20) : 'no detectado'}`, code ? 'success' : 'error');
       input.value = '';
       if (code && code.data) {
         buscarPorQR(code.data);

@@ -355,24 +355,28 @@ async function toggleScanner() {
   const file = input.files[0];
   if (!file) return;
   showToast('Procesando...', '');
-  try {
-    const bitmap = await createImageBitmap(file);
-    const canvas = document.createElement('canvas');
-    canvas.width = bitmap.width;
-    canvas.height = bitmap.height;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(bitmap, 0, 0);
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const code = jsQR(imageData.data, imageData.width, imageData.height, {inversionAttempts: 'attemptBoth'});
-    input.value = '';
-    if (code && code.data) {
-      buscarPorQR(code.data);
-    } else {
-      showToast('No se detectó QR — intenta de nuevo', 'error');
-    }
-  } catch(e) {
-    showToast('Error al procesar imagen', 'error');
-  }
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, imageData.width, imageData.height, {inversionAttempts: 'attemptBoth'});
+      input.value = '';
+      if (code && code.data) {
+        buscarPorQR(code.data);
+      } else {
+        showToast('No se detectó QR — intenta de nuevo', 'error');
+      }
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
 }
 
   } catch(e){ showToast('No se pudo acceder a la cámara','error'); }

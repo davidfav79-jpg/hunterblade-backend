@@ -130,8 +130,7 @@
     <div class="search-row">
       <input type="tel" id="phoneInput" placeholder="Teléfono del cliente" maxlength="15"
              onkeydown="if(event.key==='Enter')buscarCliente()">
-      <button class="btn-outline" onclick="document.getElementById('qrFileInput').click()" id="btnScanner" title="Escanear QR">📷</button>
-      <input type="file" id="qrFileInput" accept="image/*" style="display:none" onchange="procesarImagenQR(this)">
+      <label class="btn-outline" style="cursor:pointer;display:flex;align-items:center;justify-content:center">📷<input type="file" id="qrFileInput" accept="image/*" style="position:absolute;opacity:0;width:0;height:0" onchange="procesarImagenQR(this)"></label>
       <button class="btn-gold" onclick="buscarCliente()" id="btnBuscar">BUSCAR</button>
     </div>
   </div>

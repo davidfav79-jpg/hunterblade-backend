@@ -37,11 +37,17 @@
   .card-sub{font-size:12px;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-top:4px}
   .nivel-badge{padding:6px 12px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;background:rgba(201,168,76,.15);color:var(--gold);border:1px solid var(--gold-dim)}
 
-  /* QR */
-  .qr-wrap{padding:0 24px 20px;display:flex;align-items:center;gap:20px}
-  .qr-wrap{padding:0 24px 20px;display:flex;flex-direction:column;align-items:center;gap:12px}
+  /* QR — fondo blanco con margen generoso */
+  .qr-wrap{padding:0 24px 24px;display:flex;flex-direction:column;align-items:center;gap:12px}
+  .qr-box{
+    background:#ffffff;
+    padding:16px;
+    border-radius:12px;
+    display:inline-block;
+    line-height:0;
+  }
   .qr-box canvas,.qr-box img{display:block}
-  .qr-hint{font-size:12px;color:var(--gray);line-height:1.6}
+  .qr-hint{font-size:12px;color:var(--gray);line-height:1.6;text-align:center}
   .qr-hint strong{color:var(--white);display:block;font-size:13px;margin-bottom:4px}
 
   /* SELLOS */
@@ -136,7 +142,7 @@
 
 <script>
   const qrCode = window.location.pathname.split('/').pop();
-  const API = '';  // mismo dominio
+  const API = '';
 
   async function cargar() {
     try {
@@ -159,12 +165,14 @@
     document.getElementById('clientName').textContent = cliente.nombre;
     document.title = `${cliente.nombre} — Hunter Blade`;
 
-    // QR
+    // QR — 280px, fondo blanco, máxima corrección de errores
     new QRCode(document.getElementById('qrBox'), {
       text: cliente.qr_code,
-      width: 200, height: 200,
-      colorDark: '#000', colorLight: '#fff',
-      correctLevel: QRCode.CorrectLevel.M
+      width: 280,
+      height: 280,
+      colorDark: '#000000',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H
     });
 
     // Sellos
@@ -208,34 +216,34 @@
   }
 
   function actualizarSellos(data) {
-  const { sellos, recompensa_disponible } = data;
-  const actuales = sellos?.caducado ? 0 : (sellos?.actuales || 0);
-  document.querySelectorAll('.sello').forEach((s, i) => {
-    const num = i + 1;
-    if (num === 7) {
-      s.className = 'sello' + (actuales >= 7 ? ' premio' : '');
-      s.textContent = actuales >= 7 ? '★' : '7';
-    } else if (num === 11) {
-      s.className = 'sello' + (actuales >= 11 ? ' premio2' : '');
-      s.textContent = actuales >= 11 ? '★' : '11';
-    } else {
-      s.className = 'sello' + (num <= actuales ? ' lleno' : '');
-    }
-  });
-  document.getElementById('progresoNum').innerHTML = `${actuales} <span>/ 11</span>`;
-}
+    const { sellos, recompensa_disponible } = data;
+    const actuales = sellos?.caducado ? 0 : (sellos?.actuales || 0);
+    document.querySelectorAll('.sello').forEach((s, i) => {
+      const num = i + 1;
+      if (num === 7) {
+        s.className = 'sello' + (actuales >= 7 ? ' premio' : '');
+        s.textContent = actuales >= 7 ? '★' : '7';
+      } else if (num === 11) {
+        s.className = 'sello' + (actuales >= 11 ? ' premio2' : '');
+        s.textContent = actuales >= 11 ? '★' : '11';
+      } else {
+        s.className = 'sello' + (num <= actuales ? ' lleno' : '');
+      }
+    });
+    document.getElementById('progresoNum').innerHTML = `${actuales} <span>/ 11</span>`;
+  }
+
   cargar();
-  // Actualizar cada 30 segundos sin regenerar el QR
-setInterval(async () => {
-  try {
-    const res = await fetch(`${API}/api/clientes/qr/${qrCode}`);
-    if (!res.ok) return;
-    const data = await res.json();
-    // Solo actualizar sellos y recompensa, no el QR
-    actualizarSellos(data);
-  } catch(e) {}
-}, 30000);
-  
+
+  // Actualizar sellos cada 30 segundos sin regenerar el QR
+  setInterval(async () => {
+    try {
+      const res = await fetch(`${API}/api/clientes/qr/${qrCode}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      actualizarSellos(data);
+    } catch(e) {}
+  }, 30000);
 </script>
 </body>
 </html>

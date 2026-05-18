@@ -10472,12 +10472,29 @@ function procesarImagenQR(input) {
           drawWithOrientation(ctx, img, iw, ih, orientation);
           const imageData = ctx.getImageData(0, 0, w, h);
           if (!window.jsQR) { showToast('jsQR no disponible', 'error'); return; }
-          const code = jsQR(imageData.data, imageData.width, imageData.height, {inversionAttempts: 'attemptBoth'});
+          // Intentar 4 rotaciones si falla
+          let code = jsQR(imageData.data, imageData.width, imageData.height, {inversionAttempts: 'attemptBoth'});
+          if (!code) {
+            // Intentar rotaciones adicionales
+            const angles = [90, 180, 270];
+            for (const angle of angles) {
+              if (code) break;
+              const c2 = document.createElement('canvas');
+              const rad = angle * Math.PI / 180;
+              if (angle === 180) { c2.width = w; c2.height = h; }
+              else { c2.width = h; c2.height = w; }
+              const x2 = c2.getContext('2d');
+              x2.translate(c2.width/2, c2.height/2);
+              x2.rotate(rad);
+              x2.drawImage(canvas, -w/2, -h/2);
+              const id2 = x2.getImageData(0, 0, c2.width, c2.height);
+              code = jsQR(id2.data, id2.width, id2.height, {inversionAttempts: 'attemptBoth'});
+            }
+          }
           input.value = '';
+          showToast(`Orient:${orientation} ${w}x${h} QR:${code?'SI':'NO'}`, code?'success':'error');
           if (code && code.data) {
-            buscarPorQR(code.data);
-          } else {
-            showToast('QR no detectado — intenta de nuevo', 'error');
+            setTimeout(() => buscarPorQR(code.data), 1500);
           }
         } catch(err) {
           showToast('Error: ' + err.message, 'error');

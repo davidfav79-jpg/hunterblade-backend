@@ -10135,6 +10135,8 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
   .btn-gold:active{opacity:.8}.btn-gold:disabled{opacity:.3;cursor:not-allowed}
   .btn-outline{background:transparent;color:var(--gold);border:1px solid var(--gold-dim);padding:14px 16px;font-size:18px;border-radius:8px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
   .btn-outline:active{background:var(--gold-dim)}
+  .btn-whatsapp{background:#25D366;color:#fff;border:none;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;margin-top:10px}
+  .btn-whatsapp:active{opacity:.85}
   .scanner-container{margin:16px 20px 0;border-radius:12px;overflow:hidden;position:relative;display:none;background:#000;aspect-ratio:1}
   .scanner-container.active{display:block}
   #qr-video{width:100%;height:100%;object-fit:cover}
@@ -10154,7 +10156,7 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
   .client-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px}
   .client-phone{font-size:12px;color:var(--gray);margin-top:2px}
   .nivel-badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;background:var(--gold-dim);color:var(--gold);border:1px solid var(--gold-dim);white-space:nowrap}
-  .qr-section{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px}
+  .qr-section{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:16px}
   .qr-box{background:#fff;padding:8px;border-radius:8px;flex-shrink:0}
   .qr-box canvas,.qr-box img{display:block}
   .qr-info{flex:1}
@@ -10271,6 +10273,10 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
         <div style="font-size:13px;color:var(--white);margin-top:2px;line-height:1.5">
           El cliente guarda este QR en su Wallet para identificarse
         </div>
+        <button class="btn-whatsapp" onclick="compartirWhatsApp()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Enviar tarjeta
+        </button>
       </div>
     </div>
 
@@ -10400,6 +10406,15 @@ async function buscarPorQR(qrCode) {
   } catch(e){ showToast('Error de conexión','error'); }
 }
 
+function compartirWhatsApp() {
+  if(!state.cliente) return;
+  const nombre = state.cliente.nombre.split(' ')[0];
+  const link = `https://hunterblade-backend-production.up.railway.app/cliente/${state.cliente.qr_code}`;
+  const msg = `Hola ${nombre} 👋 Ya tienes tu tarjeta Hunter Blade lista. Ábrela y guárdala en tu pantalla de inicio para mostrarla cada vez que visites la barbería: ${link}`;
+  const tel = state.cliente.telefono.replace(/\D/g,'');
+  window.open(`https://wa.me/52${tel}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
 function getExifOrientation(buffer) {
   const view = new DataView(buffer);
   if (view.getUint16(0, false) !== 0xFFD8) return 1;
@@ -10461,7 +10476,6 @@ function procesarImagenQR(input) {
   const file = input.files[0];
   if (!file) return;
   showToast('Procesando QR...', '');
-
   const arrayReader = new FileReader();
   arrayReader.onload = function(ae) {
     const orientation = getExifOrientation(ae.target.result);
@@ -10475,11 +10489,7 @@ function procesarImagenQR(input) {
           if (!window.jsQR) { showToast('jsQR no disponible', 'error'); return; }
           const srcW = img.naturalWidth || img.width;
           const srcH = img.naturalHeight || img.height;
-
-          // Step 1: fix orientation
           const oriented = fixOrientation(img, orientation, srcW, srcH);
-
-          // Step 2: try at multiple scales — full, 1500px, 800px, 400px
           const scales = [oriented.width, 1500, 800, 400];
           let code = null;
           for (const size of scales) {
@@ -10487,8 +10497,6 @@ function procesarImagenQR(input) {
             const scaled = scaleCanvas(oriented, size);
             code = tryDecode(scaled);
           }
-
-          // Step 3: if still no result, try scanning tiles (top-left, top-right, center, bottom-left, bottom-right)
           if (!code) {
             const c = oriented;
             const tileSize = Math.min(c.width, c.height) * 0.7;
@@ -10508,7 +10516,6 @@ function procesarImagenQR(input) {
               code = tryDecode(scaled);
             }
           }
-
           input.value = '';
           if (code && code.data) {
             buscarPorQR(code.data);
@@ -10538,16 +10545,13 @@ function closeScanner() {
 function mostrarCliente(data) {
   const {cliente, sellos, recompensa_disponible, historial} = data;
   state.cliente=cliente; state.sellos=sellos; state.recompensa=recompensa_disponible;
-
   document.getElementById('clientName').textContent = cliente.nombre;
   document.getElementById('clientPhone').textContent = cliente.telefono;
   document.getElementById('emptyState').style.display='none';
   document.getElementById('clientCard').classList.add('visible');
-
   const qrBox = document.getElementById('qrDisplay');
   qrBox.innerHTML='';
   new QRCode(qrBox,{text:cliente.qr_code,width:80,height:80,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M});
-
   const actuales = sellos?.caducado ? 0 : (sellos?.actuales||0);
   const grid = document.getElementById('stampsGrid');
   grid.innerHTML='';
@@ -10563,7 +10567,6 @@ function mostrarCliente(data) {
   if(sellos?.proximo_umbral){
     nextEl.innerHTML=`<strong>${sellos.proximo_umbral.descripcion}</strong>Faltan ${sellos.proximo_umbral.faltan} visita${sellos.proximo_umbral.faltan!==1?'s':''}`;
   } else nextEl.innerHTML='';
-
   const banner=document.getElementById('rewardBanner');
   if(recompensa_disponible){
     state.canjeId=recompensa_disponible.id;
@@ -10572,9 +10575,7 @@ function mostrarCliente(data) {
     document.getElementById('rewardTitle').textContent=recompensa_disponible.descripcion;
     document.getElementById('rewardSubtitle').textContent=`Valor: $${recompensa_disponible.monto_valor} • Toca para aplicar`;
   } else { banner.className='reward-banner'; state.canjeId=null; }
-
   renderServicios();
-
   const hist=document.getElementById('historialList');
   if(historial?.length>0){
     hist.innerHTML=historial.slice(0,5).map(v=>`

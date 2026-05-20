@@ -10116,9 +10116,9 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
     --red-lt:#e63946; --purple:#c77dff;
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-  body{background:var(--bg);color:var(--white);font-family:'DM Sans',sans-serif;min-height:100vh;max-width:430px;margin:0 auto}
+  body{background:var(--bg);color:var(--white);font-family:"DM Sans",sans-serif;min-height:100vh;max-width:430px;margin:0 auto}
   header{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 14px;border-bottom:1px solid var(--border)}
-  .logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:var(--gold)}
+  .logo{font-family:"Bebas Neue",sans-serif;font-size:22px;letter-spacing:3px;color:var(--gold)}
   .logo span{color:var(--white)}
   .status-dot{width:8px;height:8px;border-radius:50%;background:var(--green-lt);box-shadow:0 0 8px var(--green-lt);animation:pulse 2s infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
@@ -10129,14 +10129,24 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
   .search-section{padding:20px 20px 0}
   .section-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:10px}
   .search-row{display:flex;gap:8px}
-  input[type=tel],input[type=text],input[type=email]{flex:1;background:var(--surface);border:1px solid var(--border);color:var(--white);padding:14px 16px;font-size:16px;font-family:'DM Sans',sans-serif;border-radius:8px;outline:none;transition:border-color .2s;width:100%}
+  input[type=tel],input[type=text],input[type=email],input[type=search]{flex:1;background:var(--surface);border:1px solid var(--border);color:var(--white);padding:14px 16px;font-size:16px;font-family:"DM Sans",sans-serif;border-radius:8px;outline:none;transition:border-color .2s;width:100%}
   input:focus{border-color:var(--gold)}input::placeholder{color:var(--gray)}
-  .btn-gold{background:var(--gold);color:#000;border:none;padding:14px 18px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;border-radius:8px;cursor:pointer;white-space:nowrap}
+  .btn-gold{background:var(--gold);color:#000;border:none;padding:14px 18px;font-family:"Bebas Neue",sans-serif;font-size:16px;letter-spacing:1px;border-radius:8px;cursor:pointer;white-space:nowrap}
   .btn-gold:active{opacity:.8}.btn-gold:disabled{opacity:.3;cursor:not-allowed}
   .btn-outline{background:transparent;color:var(--gold);border:1px solid var(--gold-dim);padding:14px 16px;font-size:18px;border-radius:8px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
   .btn-outline:active{background:var(--gold-dim)}
   .btn-whatsapp{background:#25D366;color:#fff;border:none;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;margin-top:10px}
   .btn-whatsapp:active{opacity:.85}
+  /* Lista de resultados */
+  .results-list{margin:12px 20px 0;display:none}
+  .results-list.visible{display:block}
+  .results-title{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:8px}
+  .result-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:8px;cursor:pointer;transition:border-color .2s}
+  .result-item:active{border-color:var(--gold);background:#1a1608}
+  .result-name{font-size:15px;font-weight:600;color:var(--white)}
+  .result-meta{font-size:12px;color:var(--gray);margin-top:3px}
+  .results-empty{font-size:14px;color:var(--gray);text-align:center;padding:20px 0}
+  /* Scanner */
   .scanner-container{margin:16px 20px 0;border-radius:12px;overflow:hidden;position:relative;display:none;background:#000;aspect-ratio:1}
   .scanner-container.active{display:block}
   #qr-video{width:100%;height:100%;object-fit:cover}
@@ -10153,7 +10163,7 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
   @keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
   .card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
   .card-header-info{flex:1}
-  .client-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px}
+  .client-name{font-family:"Bebas Neue",sans-serif;font-size:22px;letter-spacing:1px}
   .client-phone{font-size:12px;color:var(--gray);margin-top:2px}
   .nivel-badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;background:var(--gold-dim);color:var(--gold);border:1px solid var(--gold-dim);white-space:nowrap}
   .qr-section{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:16px}
@@ -10167,8 +10177,8 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
   .stamp.reward{background:var(--green);border-color:var(--green-lt);color:var(--green-lt);font-size:14px}
   .stamp.reward-2{background:#4a1942;border-color:var(--purple);color:var(--purple);font-size:14px}
   .stamps-info{display:flex;align-items:center;justify-content:space-between}
-  .stamps-count{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--gold);line-height:1}
-  .stamps-count span{font-size:14px;color:var(--gray);font-family:'DM Sans',sans-serif;font-weight:400}
+  .stamps-count{font-family:"Bebas Neue",sans-serif;font-size:28px;color:var(--gold);line-height:1}
+  .stamps-count span{font-size:14px;color:var(--gray);font-family:"DM Sans",sans-serif;font-weight:400}
   .next-reward{font-size:12px;color:var(--gray);text-align:right}
   .next-reward strong{color:var(--white);display:block}
   .reward-banner{margin:0 20px;padding:14px 16px;background:linear-gradient(135deg,#1a3a2a,#0d2018);border:1px solid var(--green-lt);border-radius:10px;display:none}
@@ -10187,7 +10197,7 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
   .service-btn.selected{border-color:var(--gold);background:#1a1608}
   .service-btn-name{font-size:13px;font-weight:500}
   .service-btn-price{font-size:12px;color:var(--gold);margin-top:4px}
-  .btn-full{width:100%;background:var(--gold);color:#000;border:none;padding:16px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;border-radius:8px;cursor:pointer}
+  .btn-full{width:100%;background:var(--gold);color:#000;border:none;padding:16px;font-family:"Bebas Neue",sans-serif;font-size:20px;letter-spacing:2px;border-radius:8px;cursor:pointer}
   .btn-full:disabled{opacity:.3;cursor:not-allowed}
   .history-section{padding:0 20px 20px}
   .history-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
@@ -10202,11 +10212,11 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
   .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:200;padding:20px}
   .modal-overlay.active{display:flex}
   .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;width:100%;max-width:340px;text-align:center}
-  .modal-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--gold);margin-bottom:8px}
+  .modal-title{font-family:"Bebas Neue",sans-serif;font-size:22px;letter-spacing:2px;color:var(--gold);margin-bottom:8px}
   .modal-text{font-size:14px;color:var(--gray);margin-bottom:20px;line-height:1.6}
   .modal-actions{display:flex;gap:10px}
   .btn-cancel{flex:1;background:transparent;border:1px solid var(--border);color:var(--gray);padding:12px;border-radius:8px;font-size:14px;cursor:pointer}
-  .btn-confirm{flex:2;background:var(--gold);border:none;color:#000;padding:12px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;cursor:pointer}
+  .btn-confirm{flex:2;background:var(--gold);border:none;color:#000;padding:12px;border-radius:8px;font-family:"Bebas Neue",sans-serif;font-size:16px;letter-spacing:1px;cursor:pointer}
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface);border:1px solid var(--border);padding:14px 20px;border-radius:10px;font-size:14px;white-space:nowrap;transition:transform .3s ease;z-index:100}
   .toast.show{transform:translateX(-50%) translateY(0)}
   .toast.success{border-color:var(--green-lt)}.toast.error{border-color:var(--red-lt)}
@@ -10222,19 +10232,19 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
 </header>
 
 <div class="tabs">
-  <div class="tab active" onclick="switchTab('buscar')">🔍 Buscar Cliente</div>
-  <div class="tab" onclick="switchTab('nuevo')">➕ Nuevo Cliente</div>
+  <div class="tab active" onclick="switchTab('buscar')">&#128269; Buscar Cliente</div>
+  <div class="tab" onclick="switchTab('nuevo')">&#10133; Nuevo Cliente</div>
 </div>
 
 <!-- PANEL BUSCAR -->
 <div class="panel active" id="panel-buscar">
   <div class="search-section">
-    <div class="section-label">Buscar por teléfono o QR</div>
+    <div class="section-label">Buscar por nombre, teléfono o email</div>
     <div class="search-row">
-      <input type="tel" id="phoneInput" placeholder="Teléfono del cliente" maxlength="15"
-             onkeydown="if(event.key==='Enter')buscarCliente()">
+      <input type="search" id="searchInput" placeholder="Nombre, teléfono o email..."
+             oninput="onSearchInput()" onkeydown="if(event.key==='Enter')buscarCliente()">
       <label class="btn-outline" style="cursor:pointer">
-        📷
+        &#128247;
         <input type="file" id="qrFileInput" accept="image/*" capture="environment"
                style="position:absolute;opacity:0;width:1px;height:1px;top:0;left:0"
                onchange="procesarImagenQR(this)">
@@ -10243,18 +10253,24 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
     </div>
   </div>
 
+  <!-- Lista de resultados de búsqueda -->
+  <div class="results-list" id="resultsList">
+    <div class="results-title">Selecciona un cliente</div>
+    <div id="resultsItems"></div>
+  </div>
+
   <div class="scanner-container" id="scannerContainer">
     <video id="qr-video" autoplay muted playsinline></video>
     <div class="scanner-overlay">
       <div class="scanner-frame"></div>
       <div class="scanner-line"></div>
     </div>
-    <button class="btn-close-scanner" onclick="closeScanner()">✕ Cerrar</button>
+    <button class="btn-close-scanner" onclick="closeScanner()">&#10005; Cerrar</button>
   </div>
 
   <div class="empty-state" id="emptyState">
-    <div class="empty-icon">✂</div>
-    <p>Ingresa el teléfono del cliente<br>o escanea su código QR</p>
+    <div class="empty-icon">&#9986;</div>
+    <p>Ingresa el nombre, teléfono o email del cliente<br>o escanea su código QR</p>
   </div>
 
   <div class="client-card" id="clientCard">
@@ -10290,7 +10306,7 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
     </div>
 
     <div class="reward-banner" id="rewardBanner">
-      <div class="reward-icon">🎁</div>
+      <div class="reward-icon">&#127873;</div>
       <div class="reward-text">
         <div class="reward-title" id="rewardTitle"></div>
         <div class="reward-subtitle" id="rewardSubtitle"></div>
@@ -10329,7 +10345,7 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
     <div class="form-group">
       <div class="section-label">Alias / Apodo (opcional)</div>
       <input type="text" id="newAlias" placeholder="Ej: Carlos hijo, Jr, el de la barba">
-      <div class="form-note">💡 Útil cuando varios clientes comparten teléfono — por ejemplo papá e hijo.</div>
+      <div class="form-note">&#128161; Útil cuando varios clientes comparten teléfono — por ejemplo papá e hijo.</div>
     </div>
     <div class="form-group">
       <div class="section-label">Email (opcional)</div>
@@ -10369,6 +10385,8 @@ let state = {
   scannerActive:false, scannerStream:null, scanInterval:null,
 };
 
+let searchTimeout = null;
+
 function switchTab(tab) {
   document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active',(i===0&&tab==='buscar')||(i===1&&tab==='nuevo')));
   document.getElementById('panel-buscar').classList.toggle('active',tab==='buscar');
@@ -10376,42 +10394,90 @@ function switchTab(tab) {
   if(tab!=='buscar') closeScanner();
 }
 
+function onSearchInput() {
+  clearTimeout(searchTimeout);
+  const q = document.getElementById('searchInput').value.trim();
+  if (q.length < 2) { ocultarResultados(); return; }
+  searchTimeout = setTimeout(() => buscarCliente(), 400);
+}
+
 async function buscarCliente() {
-  const tel = document.getElementById('phoneInput').value.trim();
-  if(!tel) return showToast('Ingresa un número de teléfono','error');
+  const q = document.getElementById('searchInput').value.trim();
+  if (!q) return showToast('Ingresa un nombre, teléfono o email', 'error');
   const btn = document.getElementById('btnBuscar');
-  btn.innerHTML='<span class="loading"></span>'; btn.disabled=true;
+  btn.innerHTML = '<span class="loading"></span>'; btn.disabled = true;
   try {
-    const res = await fetch(`${API}/api/clientes/tel/${encodeURIComponent(tel)}`);
+    const res = await fetch(`${API}/api/clientes/buscar?q=${encodeURIComponent(q)}`);
     const data = await res.json();
-    if(!res.ok){
-      showToast('Cliente no encontrado — regístralo en Nuevo Cliente','error');
+    if (!res.ok || !data.length) {
+      ocultarResultados();
       document.getElementById('clientCard').classList.remove('visible');
-      document.getElementById('emptyState').style.display='block';
+      document.getElementById('emptyState').style.display = 'block';
+      showToast('No se encontraron clientes', 'error');
       return;
     }
+    if (data.length === 1) {
+      // Un solo resultado — mostrar directamente
+      ocultarResultados();
+      await cargarCliente(data[0].id);
+    } else {
+      // Múltiples — mostrar lista para elegir
+      mostrarResultados(data);
+    }
+  } catch(e) { showToast('Error de conexión', 'error'); }
+  finally { btn.innerHTML = 'BUSCAR'; btn.disabled = false; }
+}
+
+function mostrarResultados(clientes) {
+  document.getElementById('clientCard').classList.remove('visible');
+  document.getElementById('emptyState').style.display = 'none';
+  const list = document.getElementById('resultsList');
+  const items = document.getElementById('resultsItems');
+  items.innerHTML = clientes.map(c => {
+    const meta = [c.telefono, c.email].filter(Boolean).join(' · ');
+    return `<div class="result-item" onclick="seleccionarCliente('${c.id}')">
+      <div class="result-name">${c.nombre}</div>
+      <div class="result-meta">${meta}</div>
+    </div>`;
+  }).join('');
+  list.classList.add('visible');
+}
+
+function ocultarResultados() {
+  document.getElementById('resultsList').classList.remove('visible');
+}
+
+async function seleccionarCliente(id) {
+  ocultarResultados();
+  await cargarCliente(id);
+}
+
+async function cargarCliente(id) {
+  try {
+    const res = await fetch(`${API}/api/clientes/id/${id}`);
+    const data = await res.json();
+    if (!res.ok) { showToast('Error al cargar cliente', 'error'); return; }
     mostrarCliente(data);
-  } catch(e){ showToast('Error de conexión','error'); }
-  finally{ btn.innerHTML='BUSCAR'; btn.disabled=false; }
+  } catch(e) { showToast('Error de conexión', 'error'); }
 }
 
 async function buscarPorQR(qrCode) {
   try {
     const res = await fetch(`${API}/api/clientes/qr/${encodeURIComponent(qrCode)}`);
     const data = await res.json();
-    if(!res.ok){ showToast('QR no reconocido','error'); return; }
+    if (!res.ok) { showToast('QR no reconocido', 'error'); return; }
+    ocultarResultados();
     mostrarCliente(data);
-    closeScanner();
-    showToast('✓ Cliente encontrado','success');
-  } catch(e){ showToast('Error de conexión','error'); }
+    showToast('✓ Cliente encontrado', 'success');
+  } catch(e) { showToast('Error de conexión', 'error'); }
 }
 
 function compartirWhatsApp() {
-  if(!state.cliente) return;
+  if (!state.cliente) return;
   const nombre = state.cliente.nombre.split(' ')[0];
   const link = `https://hunterblade-backend-production.up.railway.app/cliente/${state.cliente.qr_code}`;
   const msg = `Hola ${nombre} 👋 Ya tienes tu tarjeta Hunter Blade lista. Ábrela y guárdala en tu pantalla de inicio para mostrarla cada vez que visites la barbería: ${link}`;
-  const tel = state.cliente.telefono.replace(/\D/g,'');
+  const tel = state.cliente.telefono.replace(/\D/g, '');
   window.open(`https://wa.me/52${tel}?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
@@ -10500,31 +10566,19 @@ function procesarImagenQR(input) {
           if (!code) {
             const c = oriented;
             const tileSize = Math.min(c.width, c.height) * 0.7;
-            const positions = [
-              [0, 0],
-              [c.width - tileSize, 0],
-              [(c.width - tileSize) / 2, (c.height - tileSize) / 2],
-              [0, c.height - tileSize],
-              [c.width - tileSize, c.height - tileSize],
-            ];
+            const positions = [[0,0],[c.width-tileSize,0],[(c.width-tileSize)/2,(c.height-tileSize)/2],[0,c.height-tileSize],[c.width-tileSize,c.height-tileSize]];
             for (const [tx, ty] of positions) {
               if (code) break;
               const tile = document.createElement('canvas');
               tile.width = tileSize; tile.height = tileSize;
               tile.getContext('2d').drawImage(c, tx, ty, tileSize, tileSize, 0, 0, tileSize, tileSize);
-              const scaled = scaleCanvas(tile, 600);
-              code = tryDecode(scaled);
+              code = tryDecode(scaleCanvas(tile, 600));
             }
           }
           input.value = '';
-          if (code && code.data) {
-            buscarPorQR(code.data);
-          } else {
-            showToast('QR no detectado — acerca más el teléfono', 'error');
-          }
-        } catch(err) {
-          showToast('Error: ' + err.message, 'error');
-        }
+          if (code && code.data) buscarPorQR(code.data);
+          else showToast('QR no detectado — acerca más el teléfono', 'error');
+        } catch(err) { showToast('Error: ' + err.message, 'error'); }
       };
       img.src = e.target.result;
     };
@@ -10619,7 +10673,7 @@ async function registrarVisita() {
     if(data.recompensa_generada) msg=`🎁 ¡Sello #${data.sellos_actuales}! ${data.recompensa_generada.descripcion}`;
     showToast(msg,'success');
     state.servicioSeleccionado=null;
-    setTimeout(()=>buscarCliente(),600);
+    await cargarCliente(state.cliente.id);
   } catch(e){ showToast(e.message||'Error al registrar','error'); btn.disabled=false; }
   finally{ btn.innerHTML='REGISTRAR VISITA'; }
 }
@@ -10642,7 +10696,7 @@ async function confirmarCanje() {
     const data=await res.json();
     if(!res.ok) throw new Error(data.error);
     showToast('🎁 Recompensa aplicada correctamente','success');
-    setTimeout(()=>buscarCliente(),600);
+    await cargarCliente(state.cliente.id);
   } catch(e){ showToast(e.message||'Error al canjear','error'); }
   finally{ btn.textContent='CANJEAR'; btn.disabled=false; }
 }
@@ -10664,7 +10718,7 @@ async function registrarNuevoCliente() {
     if(!res.ok) throw new Error(data.error);
     showToast(`✓ ${nombreFinal} registrado`,'success');
     ['newNombre','newTelefono','newAlias','newEmail'].forEach(id=>document.getElementById(id).value='');
-    setTimeout(()=>{ switchTab('buscar'); document.getElementById('phoneInput').value=telefono; buscarCliente(); },800);
+    setTimeout(()=>{ switchTab('buscar'); document.getElementById('searchInput').value=nombreFinal; buscarCliente(); },800);
   } catch(e){ showToast(e.message||'Error al registrar','error'); }
   finally{ btn.innerHTML='REGISTRAR CLIENTE'; btn.disabled=false; }
 }

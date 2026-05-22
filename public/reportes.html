@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hunter Blade — Reportes</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0a0a; --surface:#111; --surface2:#181818; --border:#222;
+    --gold:#c9a84c; --gold-dim:#7a6230; --gold-pale:rgba(201,168,76,.08);
+    --white:#f0ede6; --gray:#555; --gray2:#888;
+    --green:#52b788; --red:#e63946; --blue:#4ea8de; --purple:#c77dff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--white);font-family:"DM Sans",sans-serif;min-height:100vh}
+
+  /* HEADER */
+  .header{display:flex;align-items:center;justify-content:space-between;padding:20px 28px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:10}
+  .logo{font-family:"Bebas Neue",sans-serif;font-size:20px;letter-spacing:3px;color:var(--gold)}
+  .logo span{color:var(--white)}
+  .header-nav{display:flex;gap:8px}
+  .nav-link{font-size:12px;color:var(--gray2);text-decoration:none;padding:6px 12px;border-radius:6px;transition:.2s}
+  .nav-link:hover{color:var(--white);background:var(--surface2)}
+  .nav-link.active{color:var(--gold)}
+
+  /* MAIN */
+  .main{max-width:1100px;margin:0 auto;padding:28px}
+
+  /* PAGE TITLE */
+  .page-title{font-family:"Bebas Neue",sans-serif;font-size:32px;letter-spacing:2px;color:var(--white);margin-bottom:4px}
+  .page-sub{font-size:13px;color:var(--gray2);margin-bottom:24px}
+
+  /* FILTROS */
+  .filters{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:24px}
+  .filter-group{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 14px}
+  .filter-group label{font-size:11px;color:var(--gray2);letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
+  .filter-group input[type=date]{background:transparent;border:none;color:var(--white);font-family:"DM Sans",sans-serif;font-size:14px;outline:none;cursor:pointer}
+  .filter-group input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.6)}
+  .btn-primary{background:var(--gold);color:#000;border:none;padding:10px 20px;font-family:"Bebas Neue",sans-serif;font-size:15px;letter-spacing:1px;border-radius:8px;cursor:pointer;transition:.2s}
+  .btn-primary:hover{opacity:.85}
+  .btn-primary:disabled{opacity:.4;cursor:not-allowed}
+  .btn-outline{background:transparent;color:var(--gold);border:1px solid var(--gold-dim);padding:10px 16px;font-family:"Bebas Neue",sans-serif;font-size:14px;letter-spacing:1px;border-radius:8px;cursor:pointer;transition:.2s}
+  .btn-outline:hover{background:var(--gold-pale)}
+  .btn-sm{padding:7px 12px;font-size:12px;border-radius:6px}
+
+  /* SHORTCUTS */
+  .shortcuts{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px}
+  .shortcut{font-size:12px;color:var(--gray2);padding:5px 12px;border:1px solid var(--border);border-radius:20px;cursor:pointer;transition:.2s;background:transparent}
+  .shortcut:hover{border-color:var(--gold);color:var(--gold)}
+  .shortcut.active{border-color:var(--gold);color:var(--gold);background:var(--gold-pale)}
+
+  /* KPI CARDS */
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:28px}
+  .kpi{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;position:relative;overflow:hidden}
+  .kpi::before{content:"";position:absolute;top:0;left:0;right:0;height:2px}
+  .kpi.gold::before{background:var(--gold)}
+  .kpi.green::before{background:var(--green)}
+  .kpi.blue::before{background:var(--blue)}
+  .kpi.purple::before{background:var(--purple)}
+  .kpi-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gray2);margin-bottom:8px}
+  .kpi-value{font-family:"Bebas Neue",sans-serif;font-size:38px;line-height:1;color:var(--white)}
+  .kpi-sub{font-size:12px;color:var(--gray2);margin-top:4px}
+
+  /* SECTION */
+  .section{margin-bottom:28px}
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .section-title{font-family:"Bebas Neue",sans-serif;font-size:18px;letter-spacing:1px;color:var(--white)}
+  .section-count{font-size:12px;color:var(--gray2);background:var(--surface2);padding:3px 10px;border-radius:20px}
+
+  /* TABLE */
+  .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  table{width:100%;border-collapse:collapse}
+  thead tr{border-bottom:1px solid var(--border)}
+  th{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray2);padding:12px 16px;text-align:left;font-weight:500;white-space:nowrap}
+  td{font-size:13px;color:var(--white);padding:11px 16px;border-bottom:1px solid #1a1a1a}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:var(--surface2)}
+  .badge{display:inline-block;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600;letter-spacing:.5px}
+  .badge-gold{background:rgba(201,168,76,.15);color:var(--gold)}
+  .badge-green{background:rgba(82,183,136,.15);color:var(--green)}
+  .badge-blue{background:rgba(78,168,222,.15);color:var(--blue)}
+  .badge-purple{background:rgba(199,125,255,.15);color:var(--purple)}
+  .badge-red{background:rgba(230,57,70,.15);color:var(--red)}
+
+  /* EMPTY STATE */
+  .empty{text-align:center;padding:40px 20px;color:var(--gray2)}
+  .empty-icon{font-size:32px;margin-bottom:8px;opacity:.3}
+  .empty p{font-size:13px}
+
+  /* LOADING */
+  .loading-row td{text-align:center;padding:32px;color:var(--gray2)}
+  .spinner{display:inline-block;width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* EXPORT */
+  .export-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .export-note{font-size:12px;color:var(--gray2)}
+
+  /* ALERT */
+  .alert{padding:14px 18px;border-radius:8px;font-size:13px;margin-bottom:16px;display:none}
+  .alert.visible{display:flex;align-items:center;gap:10px}
+  .alert-warn{background:rgba(201,168,76,.1);border:1px solid var(--gold-dim);color:var(--gold)}
+  .alert-error{background:rgba(230,57,70,.1);border:1px solid rgba(230,57,70,.3);color:var(--red)}
+
+  /* TOOLTIP */
+  .tooltip{position:relative;cursor:help}
+  .tooltip:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#222;color:var(--white);font-size:11px;padding:5px 10px;border-radius:6px;white-space:nowrap;z-index:99}
+
+  @media(max-width:640px){
+    .main{padding:16px}
+    .kpi-grid{grid-template-columns:1fr 1fr}
+    .filters{flex-direction:column;align-items:stretch}
+    .filter-group{justify-content:space-between}
+    th,td{padding:10px 12px}
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">HUNTER <span>BLADE</span></div>
+  <nav class="header-nav">
+    <a href="/index.html" class="nav-link">Dashboard</a>
+    <a href="/reportes.html" class="nav-link active">Reportes</a>
+  </nav>
+</div>
+
+<div class="main">
+
+  <div class="page-title">Reportes de Actividad</div>
+  <div class="page-sub">Visitas, canjes y clientes nuevos por período</div>
+
+  <!-- SHORTCUTS -->
+  <div class="shortcuts">
+    <div class="shortcut active" onclick="setShortcut('hoy',this)">Hoy</div>
+    <div class="shortcut" onclick="setShortcut('ayer',this)">Ayer</div>
+    <div class="shortcut" onclick="setShortcut('semana',this)">Esta semana</div>
+    <div class="shortcut" onclick="setShortcut('mes',this)">Este mes</div>
+    <div class="shortcut" onclick="setShortcut('mes_ant',this)">Mes anterior</div>
+  </div>
+
+  <!-- FILTROS -->
+  <div class="filters">
+    <div class="filter-group">
+      <label>Desde</label>
+      <input type="date" id="fechaDesde">
+    </div>
+    <div class="filter-group">
+      <label>Hasta</label>
+      <input type="date" id="fechaHasta">
+    </div>
+    <button class="btn-primary" onclick="cargarReporte()" id="btnBuscar">GENERAR REPORTE</button>
+    <div class="export-bar">
+      <button class="btn-outline btn-sm" onclick="exportarCSV()">⬇ CSV</button>
+      <button class="btn-outline btn-sm" onclick="exportarEmail()">✉ Preparar email</button>
+    </div>
+  </div>
+
+  <!-- ALERTA CRUCE -->
+  <div class="alert alert-warn" id="alertaCruce">
+    <span>⚠️</span>
+    <span id="alertaCruceMsg"></span>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi gold">
+      <div class="kpi-label">Visitas registradas</div>
+      <div class="kpi-value" id="kpiVisitas">—</div>
+      <div class="kpi-sub" id="kpiVisitasSub">en el período</div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-label">Canjes aplicados</div>
+      <div class="kpi-value" id="kpiCanjes">—</div>
+      <div class="kpi-sub" id="kpiCanjesSub">recompensas cobradas</div>
+    </div>
+    <div class="kpi blue">
+      <div class="kpi-label">Clientes nuevos</div>
+      <div class="kpi-value" id="kpiNuevos">—</div>
+      <div class="kpi-sub">registrados en el período</div>
+    </div>
+    <div class="kpi purple">
+      <div class="kpi-label">Clientes únicos</div>
+      <div class="kpi-value" id="kpiUnicos">—</div>
+      <div class="kpi-sub">visitaron en el período</div>
+    </div>
+  </div>
+
+  <!-- TABLA VISITAS -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">Visitas del período</div>
+      <div class="section-count" id="countVisitas">0 registros</div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th>Teléfono</th>
+            <th>Servicio</th>
+            <th>Sello #</th>
+            <th>Tipo</th>
+          </tr>
+        </thead>
+        <tbody id="tablaVisitas">
+          <tr class="loading-row"><td colspan="6"><span class="spinner"></span>Selecciona un período</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TABLA CANJES -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">Canjes aplicados</div>
+      <div class="section-count" id="countCanjes">0 registros</div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th>Teléfono</th>
+            <th>Recompensa</th>
+            <th>Valor</th>
+          </tr>
+        </thead>
+        <tbody id="tablaCanjes">
+          <tr class="loading-row"><td colspan="5"><span class="spinner"></span>Selecciona un período</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TABLA CLIENTES NUEVOS -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">Clientes nuevos</div>
+      <div class="section-count" id="countNuevos">0 registros</div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha registro</th>
+            <th>Nombre</th>
+            <th>Teléfono</th>
+            <th>Email</th>
+          </tr>
+        </thead>
+        <tbody id="tablaNuevos">
+          <tr class="loading-row"><td colspan="4"><span class="spinner"></span>Selecciona un período</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL EMAIL -->
+<div id="modalEmail" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#141414;border:1px solid #333;border-radius:16px;padding:24px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--gold)">REPORTE PARA EMAIL</div>
+      <button onclick="closeModal()" style="background:none;border:none;color:var(--gray2);font-size:20px;cursor:pointer">✕</button>
+    </div>
+    <div style="font-size:12px;color:var(--gray2);margin-bottom:10px">Copia este texto y pégalo en tu email</div>
+    <textarea id="emailContent" style="width:100%;height:320px;background:#0a0a0a;border:1px solid #333;color:var(--white);padding:14px;font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.7;border-radius:8px;resize:vertical;outline:none"></textarea>
+    <div style="display:flex;gap:10px;margin-top:14px">
+      <button onclick="copiarEmail()" class="btn-primary" style="flex:1">COPIAR</button>
+      <button onclick="closeModal()" style="flex:1;background:transparent;border:1px solid #333;color:var(--gray2);padding:10px;border-radius:8px;cursor:pointer;font-size:14px">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '';
+let reporteData = { visitas: [], canjes: [], nuevos: [] };
+
+// ── FECHAS ──────────────────────────────────────────────
+function hoy() { return new Date().toISOString().split('T')[0]; }
+function diasAtras(n) {
+  const d = new Date(); d.setDate(d.getDate() - n);
+  return d.toISOString().split('T')[0];
+}
+function inicioSemana() {
+  const d = new Date();
+  const dia = d.getDay() || 7;
+  d.setDate(d.getDate() - dia + 1);
+  return d.toISOString().split('T')[0];
+}
+function inicioMes() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`;
+}
+function inicioMesAnterior() {
+  const d = new Date();
+  d.setDate(1); d.setMonth(d.getMonth()-1);
+  return d.toISOString().split('T')[0];
+}
+function finMesAnterior() {
+  const d = new Date();
+  d.setDate(0);
+  return d.toISOString().split('T')[0];
+}
+
+function setShortcut(tipo, el) {
+  document.querySelectorAll('.shortcut').forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+  const desde = document.getElementById('fechaDesde');
+  const hasta = document.getElementById('fechaHasta');
+  switch(tipo) {
+    case 'hoy':     desde.value=hoy();              hasta.value=hoy(); break;
+    case 'ayer':    desde.value=diasAtras(1);        hasta.value=diasAtras(1); break;
+    case 'semana':  desde.value=inicioSemana();      hasta.value=hoy(); break;
+    case 'mes':     desde.value=inicioMes();         hasta.value=hoy(); break;
+    case 'mes_ant': desde.value=inicioMesAnterior(); hasta.value=finMesAnterior(); break;
+  }
+  cargarReporte();
+}
+
+// ── INIT ────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('fechaDesde').value = hoy();
+  document.getElementById('fechaHasta').value = hoy();
+  cargarReporte();
+});
+
+// ── CARGAR REPORTE ──────────────────────────────────────
+async function cargarReporte() {
+  const desde = document.getElementById('fechaDesde').value;
+  const hasta = document.getElementById('fechaHasta').value;
+  if (!desde || !hasta) return;
+
+  const btn = document.getElementById('btnBuscar');
+  btn.textContent = 'CARGANDO...'; btn.disabled = true;
+
+  setLoadingState();
+
+  try {
+    const [visRes, canRes, cliRes] = await Promise.all([
+      fetch(`${API}/api/reportes/visitas?desde=${desde}&hasta=${hasta}`),
+      fetch(`${API}/api/reportes/canjes?desde=${desde}&hasta=${hasta}`),
+      fetch(`${API}/api/reportes/clientes-nuevos?desde=${desde}&hasta=${hasta}`),
+    ]);
+
+    const visitas  = visRes.ok  ? await visRes.json()  : [];
+    const canjes   = canRes.ok  ? await canRes.json()  : [];
+    const nuevos   = cliRes.ok  ? await cliRes.json()  : [];
+
+    reporteData = { visitas, canjes, nuevos };
+    renderReporte(visitas, canjes, nuevos);
+
+  } catch(e) {
+    // Endpoint aún no existe — mostrar datos de demo con aviso
+    renderDemo(desde, hasta);
+  } finally {
+    btn.textContent = 'GENERAR REPORTE'; btn.disabled = false;
+  }
+}
+
+function setLoadingState() {
+  ['tablaVisitas','tablaCanjes','tablaNuevos'].forEach(id => {
+    document.getElementById(id).innerHTML =
+      '<tr class="loading-row"><td colspan="6"><span class="spinner"></span>Cargando...</td></tr>';
+  });
+  ['kpiVisitas','kpiCanjes','kpiNuevos','kpiUnicos'].forEach(id => {
+    document.getElementById(id).textContent = '—';
+  });
+}
+
+function renderReporte(visitas, canjes, nuevos) {
+  // KPIs
+  const unicosSet = new Set(visitas.map(v => v.cliente_id));
+  document.getElementById('kpiVisitas').textContent = visitas.length;
+  document.getElementById('kpiCanjes').textContent  = canjes.length;
+  document.getElementById('kpiNuevos').textContent  = nuevos.length;
+  document.getElementById('kpiUnicos').textContent  = unicosSet.size;
+
+  // Counts
+  document.getElementById('countVisitas').textContent = `${visitas.length} registros`;
+  document.getElementById('countCanjes').textContent  = `${canjes.length} registros`;
+  document.getElementById('countNuevos').textContent  = `${nuevos.length} registros`;
+
+  // Tabla visitas
+  document.getElementById('tablaVisitas').innerHTML = visitas.length
+    ? visitas.map(v => `
+      <tr>
+        <td>${formatFecha(v.fecha)}</td>
+        <td>${v.cliente_nombre}</td>
+        <td>${v.cliente_telefono || '—'}</td>
+        <td>${v.servicio}</td>
+        <td><span class="badge badge-gold">#${v.numero_sello}</span></td>
+        <td>${v.es_canje ? '<span class="badge badge-green">🎁 Canje</span>' : '<span class="badge badge-blue">Visita</span>'}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="6" class="empty"><div class="empty-icon">📋</div><p>Sin visitas en este período</p></td></tr>';
+
+  // Tabla canjes
+  document.getElementById('tablaCanjes').innerHTML = canjes.length
+    ? canjes.map(c => `
+      <tr>
+        <td>${formatFecha(c.aplicado_en)}</td>
+        <td>${c.cliente_nombre}</td>
+        <td>${c.cliente_telefono || '—'}</td>
+        <td><span class="badge badge-purple">${c.descripcion}</span></td>
+        <td>$${c.monto_valor}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="5" class="empty"><div class="empty-icon">🎁</div><p>Sin canjes en este período</p></td></tr>';
+
+  // Tabla nuevos
+  document.getElementById('tablaNuevos').innerHTML = nuevos.length
+    ? nuevos.map(c => `
+      <tr>
+        <td>${formatFecha(c.creado_en)}</td>
+        <td>${c.nombre}</td>
+        <td>${c.telefono}</td>
+        <td>${c.email || '—'}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="4" class="empty"><div class="empty-icon">👤</div><p>Sin clientes nuevos en este período</p></td></tr>';
+}
+
+// Demo cuando el endpoint aún no está listo
+function renderDemo(desde, hasta) {
+  document.getElementById('kpiVisitas').textContent = '—';
+  document.getElementById('kpiCanjes').textContent  = '—';
+  document.getElementById('kpiNuevos').textContent  = '—';
+  document.getElementById('kpiUnicos').textContent  = '—';
+
+  const msg = '⚠️ El endpoint de reportes aún no está disponible en el servidor. Sube el archivo reportes.js al backend para activar esta sección.';
+  ['tablaVisitas','tablaCanjes','tablaNuevos'].forEach((id, i) => {
+    const cols = [6,5,4][i];
+    document.getElementById(id).innerHTML =
+      `<tr><td colspan="${cols}" style="text-align:center;padding:24px;color:#666;font-size:13px">${msg}</td></tr>`;
+  });
+}
+
+// ── EXPORT CSV ──────────────────────────────────────────
+function exportarCSV() {
+  const { visitas, canjes, nuevos } = reporteData;
+  if (!visitas.length && !canjes.length && !nuevos.length) {
+    alert('Genera un reporte primero'); return;
+  }
+
+  let csv = 'VISITAS\nFecha,Cliente,Telefono,Servicio,Sello,Tipo\n';
+  visitas.forEach(v => {
+    csv += `${formatFecha(v.fecha)},"${v.cliente_nombre}",${v.cliente_telefono},${v.servicio},${v.numero_sello},${v.es_canje?'Canje':'Visita'}\n`;
+  });
+
+  csv += '\nCANJES\nFecha,Cliente,Telefono,Recompensa,Valor\n';
+  canjes.forEach(c => {
+    csv += `${formatFecha(c.aplicado_en)},"${c.cliente_nombre}",${c.cliente_telefono},"${c.descripcion}",${c.monto_valor}\n`;
+  });
+
+  csv += '\nCLIENTES NUEVOS\nFecha,Nombre,Telefono,Email\n';
+  nuevos.forEach(c => {
+    csv += `${formatFecha(c.creado_en)},"${c.nombre}",${c.telefono},${c.email||''}\n`;
+  });
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url;
+  a.download = `hunterblade-reporte-${document.getElementById('fechaDesde').value}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+// ── EMAIL ───────────────────────────────────────────────
+function exportarEmail() {
+  const desde = document.getElementById('fechaDesde').value;
+  const hasta = document.getElementById('fechaHasta').value;
+  const { visitas, canjes, nuevos } = reporteData;
+
+  const unicosSet = new Set(visitas.map(v => v.cliente_id));
+
+  let txt = `REPORTE HUNTER BLADE\n`;
+  txt += `Período: ${desde === hasta ? desde : `${desde} al ${hasta}`}\n`;
+  txt += `Generado: ${new Date().toLocaleString('es-MX')}\n`;
+  txt += `${'─'.repeat(40)}\n\n`;
+
+  txt += `RESUMEN\n`;
+  txt += `• Visitas totales: ${visitas.length}\n`;
+  txt += `• Clientes únicos: ${unicosSet.size}\n`;
+  txt += `• Canjes aplicados: ${canjes.length}\n`;
+  txt += `• Clientes nuevos: ${nuevos.length}\n\n`;
+
+  if (visitas.length) {
+    txt += `VISITAS DEL PERÍODO\n${'─'.repeat(40)}\n`;
+    visitas.forEach(v => {
+      txt += `${formatFecha(v.fecha)} | ${v.cliente_nombre} | ${v.servicio} | Sello #${v.numero_sello}${v.es_canje?' 🎁':''}\n`;
+    });
+    txt += '\n';
+  }
+
+  if (canjes.length) {
+    txt += `CANJES APLICADOS\n${'─'.repeat(40)}\n`;
+    canjes.forEach(c => {
+      txt += `${formatFecha(c.aplicado_en)} | ${c.cliente_nombre} | ${c.descripcion} | $${c.monto_valor}\n`;
+    });
+    txt += '\n';
+  }
+
+  if (nuevos.length) {
+    txt += `CLIENTES NUEVOS\n${'─'.repeat(40)}\n`;
+    nuevos.forEach(c => {
+      txt += `${formatFecha(c.creado_en)} | ${c.nombre} | ${c.telefono}\n`;
+    });
+    txt += '\n';
+  }
+
+  txt += `${'─'.repeat(40)}\nHunter Blade — Sistema de Fidelización`;
+
+  document.getElementById('emailContent').value = txt;
+  document.getElementById('modalEmail').style.display = 'flex';
+}
+
+function copiarEmail() {
+  const ta = document.getElementById('emailContent');
+  ta.select();
+  document.execCommand('copy');
+  const btn = event.target;
+  btn.textContent = '✓ COPIADO';
+  setTimeout(() => btn.textContent = 'COPIAR', 2000);
+}
+
+function closeModal() {
+  document.getElementById('modalEmail').style.display = 'none';
+}
+
+function formatFecha(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('es-MX', {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'});
+}
+</script>
+</body>
+</html>

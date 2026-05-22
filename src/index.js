@@ -19,10 +19,16 @@ app.use('/api/clientes',  require('./routes/clientes'));
 app.use('/api/visitas',   require('./routes/visitas'));
 app.use('/api/canjes',    require('./routes/canjes'));
 app.use('/api/webhook',   require('./routes/webhook'));
+app.use('/api/reportes',  require('./routes/reportes'));
+
 app.use('/cliente',       require('./routes/tarjeta'));
 
-app.get('/health', (_, res) => res.json({ ok: true, version: '1.0.0' }));
+// Ruta corta: /c/:codigo → redirige a /cliente/:codigo
+app.get('/c/:codigo', (req, res) => {
+  res.redirect(301, `/cliente/${req.params.codigo}`);
+});
 
+app.get('/health', (_, res) => res.json({ ok: true, version: '1.0.0' }));
 app.get('/', (_, res) => res.sendFile(path.join(__dirname, '../public/index.html')));
 
 const PORT = process.env.PORT || 3000;

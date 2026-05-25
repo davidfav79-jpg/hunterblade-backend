@@ -2,13 +2,18 @@
   "promociones": [
     {
       "id": 1,
-      "imagen": "/promo/promo1.png",
-      "alt": "Corte + Barba $250 todo julio"
+      "imagen": "/promo/papa.png",
+      "alt": "Este día del Padre, reserva con tu hijo"
     },
     {
       "id": 2,
-      "imagen": "/promo/promo2.png",
-      "alt": "Trae a un amigo y gana un sello extra"
-    }
+      "imagen": "/promo/cumple.png",
+      "alt": "Descuento en tu cumple"
+    },
+    {
+      "id": 3,
+      "imagen": "/promo/moto.png",
+      "alt": "Descuento en moto"
+    }, 
   ]
 }

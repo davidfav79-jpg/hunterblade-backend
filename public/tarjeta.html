@@ -15,8 +15,8 @@
 <style>
   :root {
     --bg:#0a0a0a; --surface:#141414; --border:#2a2a2a;
-    --gold:#c9a84c; --gold-dim:#7a6230; --white:#f0ede6;
-    --gray:#555; --green:#2d6a4f; --green-lt:#52b788;
+    --gold:#c9a84c; --gold-dim:#7a6230; --gold-pale:rgba(201,168,76,.1);
+    --white:#f0ede6; --gray:#555; --green:#2d6a4f; --green-lt:#52b788;
     --purple:#c77dff;
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -42,7 +42,7 @@
   .card-sub{font-size:11px;color:var(--gold);letter-spacing:1.5px;text-transform:uppercase;margin-top:3px}
   .nivel-badge{padding:5px 11px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;background:rgba(201,168,76,.12);color:var(--gold);border:1px solid var(--gold-dim);white-space:nowrap;flex-shrink:0}
 
-  /* QR — más compacto */
+  /* QR */
   .qr-row{padding:0 20px 20px;display:flex;align-items:center;gap:16px}
   .qr-box{background:#ffffff;padding:10px;border-radius:10px;flex-shrink:0;line-height:0}
   .qr-box canvas,.qr-box img{display:block}
@@ -77,6 +77,25 @@
   .recompensa.purple .rec-title{color:var(--purple)}
   .rec-sub{font-size:11px;color:var(--gray);margin-top:2px}
 
+  /* ─── CARRUSEL DE PROMOCIONES ─── */
+  .promo-section{margin:0 16px 14px}
+  .promo-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:10px}
+  .carousel-wrap{position:relative;border-radius:12px;overflow:hidden;background:var(--surface)}
+  .carousel-track{display:flex;transition:transform .4s cubic-bezier(.4,0,.2,1)}
+  .carousel-slide{min-width:100%;position:relative}
+  .carousel-slide img{width:100%;aspect-ratio:2/1;object-fit:cover;display:block}
+  .carousel-slide .promo-caption{position:absolute;bottom:0;left:0;right:0;padding:10px 14px;background:linear-gradient(transparent,rgba(0,0,0,.7));font-size:12px;color:var(--white)}
+  /* Dots */
+  .carousel-dots{display:flex;justify-content:center;gap:6px;margin-top:10px}
+  .carousel-dot{width:6px;height:6px;border-radius:50%;background:var(--border);transition:all .3s;cursor:pointer}
+  .carousel-dot.active{background:var(--gold);width:18px;border-radius:3px}
+  /* Arrows */
+  .carousel-btn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.6);border:1px solid var(--border);color:var(--white);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;z-index:2;transition:all .2s}
+  .carousel-btn:active{background:rgba(201,168,76,.3)}
+  .carousel-btn.prev{left:8px}
+  .carousel-btn.next{right:8px}
+  .carousel-empty{padding:24px;text-align:center;font-size:13px;color:var(--gray)}
+
   /* HISTORIAL */
   .historial-section{padding:16px 20px}
   .historial-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:10px}
@@ -87,7 +106,6 @@
   .hist-servicio{font-size:12px;font-weight:500;color:var(--white)}
   .hist-fecha{font-size:11px;color:var(--gray);margin-top:1px}
   .hist-canje{font-size:14px}
-  .historial-empty{font-size:12px;color:var(--gray);text-align:center;padding:12px 0}
 
   /* INSTALL HINT */
   .install-hint{margin:14px 16px 0;padding:13px 16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;font-size:12px;color:var(--gray);line-height:1.7;text-align:center}
@@ -97,7 +115,6 @@
   .loading-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px}
   .spinner{width:32px;height:32px;border:2px solid #222;border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
-  @keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 <body>
@@ -154,6 +171,17 @@
     </div>
   </div>
 
+  <!-- CARRUSEL DE PROMOCIONES -->
+  <div class="promo-section" id="promoSection" style="display:none">
+    <div class="promo-label">Promociones del mes</div>
+    <div class="carousel-wrap">
+      <div class="carousel-track" id="carouselTrack"></div>
+      <button class="carousel-btn prev" id="btnPrev" onclick="moverCarousel(-1)">&#8249;</button>
+      <button class="carousel-btn next" id="btnNext" onclick="moverCarousel(1)">&#8250;</button>
+    </div>
+    <div class="carousel-dots" id="carouselDots"></div>
+  </div>
+
   <!-- HISTORIAL -->
   <div class="historial-section" id="historialSection" style="display:none">
     <div class="historial-label">Mis visitas recientes</div>
@@ -172,12 +200,79 @@
   const qrCode = window.location.pathname.split('/').pop();
   const API = '';
 
+  // ── CARRUSEL ────────────────────────────────────────────
+  let carouselIdx = 0;
+  let carouselTotal = 0;
+  let autoSlideTimer = null;
+
+  function moverCarousel(dir) {
+    carouselIdx = (carouselIdx + dir + carouselTotal) % carouselTotal;
+    actualizarCarousel();
+    reiniciarAutoSlide();
+  }
+
+  function irASlide(idx) {
+    carouselIdx = idx;
+    actualizarCarousel();
+    reiniciarAutoSlide();
+  }
+
+  function actualizarCarousel() {
+    document.getElementById('carouselTrack').style.transform = `translateX(-${carouselIdx * 100}%)`;
+    document.querySelectorAll('.carousel-dot').forEach((d, i) => {
+      d.classList.toggle('active', i === carouselIdx);
+    });
+    document.getElementById('btnPrev').style.display = carouselTotal > 1 ? 'flex' : 'none';
+    document.getElementById('btnNext').style.display = carouselTotal > 1 ? 'flex' : 'none';
+  }
+
+  function reiniciarAutoSlide() {
+    if (autoSlideTimer) clearInterval(autoSlideTimer);
+    if (carouselTotal > 1) {
+      autoSlideTimer = setInterval(() => moverCarousel(1), 4000);
+    }
+  }
+
+  async function cargarPromociones() {
+    try {
+      const res = await fetch('/promo/config.json?t=' + Date.now());
+      if (!res.ok) return;
+      const data = await res.json();
+      const promos = data.promociones || [];
+      if (!promos.length) return;
+
+      const section = document.getElementById('promoSection');
+      const track = document.getElementById('carouselTrack');
+      const dots = document.getElementById('carouselDots');
+
+      track.innerHTML = promos.map(p => `
+        <div class="carousel-slide">
+          <img src="${p.imagen}" alt="${p.alt || 'Promoción'}" loading="lazy"
+               onerror="this.parentElement.style.display='none'">
+          ${p.alt ? `<div class="promo-caption">${p.alt}</div>` : ''}
+        </div>`).join('');
+
+      dots.innerHTML = promos.map((_, i) =>
+        `<div class="carousel-dot${i===0?' active':''}" onclick="irASlide(${i})"></div>`
+      ).join('');
+
+      carouselTotal = promos.length;
+      section.style.display = 'block';
+      actualizarCarousel();
+      reiniciarAutoSlide();
+    } catch(e) {
+      // Sin promociones, sección oculta
+    }
+  }
+
+  // ── TARJETA ─────────────────────────────────────────────
   async function cargar() {
     try {
       const res = await fetch(`${API}/api/clientes/qr/${qrCode}`);
       if (!res.ok) throw new Error('not found');
       const data = await res.json();
       renderTarjeta(data);
+      cargarPromociones();
     } catch(e) {
       document.getElementById('loadingScreen').innerHTML = `
         <div style="text-align:center;padding:40px 20px">
@@ -193,7 +288,6 @@
     document.getElementById('clientName').textContent = cliente.nombre;
     document.title = `${cliente.nombre} — Hunter Blade`;
 
-    // QR — 160px, compacto pero legible
     new QRCode(document.getElementById('qrBox'), {
       text: cliente.qr_code,
       width: 160,
@@ -203,7 +297,6 @@
       correctLevel: QRCode.CorrectLevel.H
     });
 
-    // Sellos
     const actuales = sellos?.caducado ? 0 : (sellos?.actuales || 0);
     const grid = document.getElementById('sellosGrid');
     grid.innerHTML = '';
@@ -230,7 +323,6 @@
         `<strong>${prox.descripcion}</strong>Faltan ${prox.faltan} visita${prox.faltan !== 1 ? 's' : ''}`;
     }
 
-    // Recompensa
     if (recompensa_disponible) {
       const isPaquete = recompensa_disponible.tipo_recompensa === 'paquete_gratis';
       const banner = document.getElementById('recompensaBanner');
@@ -239,7 +331,6 @@
       document.getElementById('recSub').textContent = `Valor $${recompensa_disponible.monto_valor} • Muéstraselo al barbero`;
     }
 
-    // Historial
     if (historial && historial.length > 0) {
       const sec = document.getElementById('historialSection');
       const items = document.getElementById('historialItems');
@@ -259,24 +350,6 @@
     document.getElementById('mainContent').style.display = 'block';
   }
 
-  function actualizarSellos(data) {
-    const { sellos } = data;
-    const actuales = sellos?.caducado ? 0 : (sellos?.actuales || 0);
-    document.querySelectorAll('.sello').forEach((s, i) => {
-      const num = i + 1;
-      if (num === 7) {
-        s.className = 'sello' + (actuales >= 7 ? ' premio' : '');
-        s.textContent = actuales >= 7 ? '★' : '7';
-      } else if (num === 11) {
-        s.className = 'sello' + (actuales >= 11 ? ' premio2' : '');
-        s.textContent = actuales >= 11 ? '★' : '11';
-      } else {
-        s.className = 'sello' + (num <= actuales ? ' lleno' : '');
-      }
-    });
-    document.getElementById('progresoNum').innerHTML = `${actuales} <span>/ 11</span>`;
-  }
-
   function formatFecha(iso) {
     return new Date(iso).toLocaleDateString('es-MX', {day:'numeric', month:'short', year:'numeric'});
   }
@@ -288,7 +361,21 @@
       const res = await fetch(`${API}/api/clientes/qr/${qrCode}`);
       if (!res.ok) return;
       const data = await res.json();
-      actualizarSellos(data);
+      const { sellos } = data;
+      const actuales = sellos?.caducado ? 0 : (sellos?.actuales || 0);
+      document.querySelectorAll('.sello').forEach((s, i) => {
+        const num = i + 1;
+        if (num === 7) {
+          s.className = 'sello' + (actuales >= 7 ? ' premio' : '');
+          s.textContent = actuales >= 7 ? '★' : '7';
+        } else if (num === 11) {
+          s.className = 'sello' + (actuales >= 11 ? ' premio2' : '');
+          s.textContent = actuales >= 11 ? '★' : '11';
+        } else {
+          s.className = 'sello' + (num <= actuales ? ' lleno' : '');
+        }
+      });
+      document.getElementById('progresoNum').innerHTML = `${actuales} <span>/ 11</span>`;
     } catch(e) {}
   }, 30000);
 </script>

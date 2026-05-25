@@ -10475,7 +10475,7 @@ async function buscarPorQR(qrCode) {
 function compartirWhatsApp() {
   if (!state.cliente) return;
   const nombre = state.cliente.nombre.split(' ')[0];
-  const link = `https://hunterblade-backend-production.up.railway.app/cliente/${state.cliente.qr_code}`;
+  const link = `https://app.hunterblade.mx/c/${state.cliente.qr_code}`;
   const msg = `Hola ${nombre} 👋 Ya tienes tu tarjeta Hunter Blade lista. Ábrela y guárdala en tu pantalla de inicio para mostrarla cada vez que visites la barbería: ${link}`;
   const tel = state.cliente.telefono.replace(/\D/g, '');
   window.open(`https://wa.me/52${tel}?text=${encodeURIComponent(msg)}`, '_blank');

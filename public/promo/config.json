@@ -2,12 +2,12 @@
   "promociones": [
     {
       "id": 1,
-      "imagen": "/promo/papa.png",
+      "imagen": "/promo/Papa.png",
       "alt": "Este día del Padre, reserva con tu hijo"
     },
     {
       "id": 2,
-      "imagen": "/promo/cumple.png",
+      "imagen": "/promo/Cumple.png",
       "alt": "Descuento en tu cumple"
     },
     {

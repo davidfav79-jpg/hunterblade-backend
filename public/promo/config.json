@@ -2,8 +2,13 @@
   "promociones": [
     {
       "id": 1,
-      "imagen": "/promo/promo1.png",
-      "alt": "Promoción del mes"
+      "imagen": "/promo/julio.jpg",
+      "alt": "Corte + Barba $250 todo julio"
+    },
+    {
+      "id": 2,
+      "imagen": "/promo/referido.jpg",
+      "alt": "Trae a un amigo y gana un sello extra"
     }
   ]
 }

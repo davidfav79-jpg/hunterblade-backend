@@ -2,7 +2,7 @@
   "promociones": [
     {
       "id": 1,
-      "imagen": "/promo/promo1.jpg",
+      "imagen": "/promo/promo1.png",
       "alt": "Promoción del mes"
     }
   ]

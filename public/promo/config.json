@@ -1,0 +1,9 @@
+{
+  "promociones": [
+    {
+      "id": 1,
+      "imagen": "/promo/promo1.jpg",
+      "alt": "Promoción del mes"
+    }
+  ]
+}

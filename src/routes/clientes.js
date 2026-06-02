@@ -3,11 +3,9 @@ const db     = require('../db');
 const { estadoCliente } = require('../services/sellos');
 
 // GET /api/clientes/buscar?q=... — búsqueda por nombre, teléfono o email
-// Devuelve lista de coincidencias (sin datos de sellos, solo para elegir)
 router.get('/buscar', async (req, res) => {
   const q = (req.query.q || '').trim();
   if (!q || q.length < 2) return res.status(400).json({ error: 'Mínimo 2 caracteres' });
-
   try {
     const { rows } = await db.query(
       `SELECT id, nombre, telefono, email, qr_code, creado_en
@@ -27,7 +25,7 @@ router.get('/buscar', async (req, res) => {
   }
 });
 
-// GET /api/clientes/qr/:codigo — consulta por QR (el barbero escanea)
+// GET /api/clientes/qr/:codigo — consulta por QR
 router.get('/qr/:codigo', async (req, res) => {
   try {
     const estado = await estadoCliente(req.params.codigo, 'qr');
@@ -39,36 +37,29 @@ router.get('/qr/:codigo', async (req, res) => {
 });
 
 // GET /api/clientes/tel/:telefono — consulta por teléfono
-// Si hay múltiples clientes con ese teléfono, devuelve lista para elegir
 router.get('/tel/:telefono', async (req, res) => {
   try {
     const { rows } = await db.query(
       `SELECT id FROM clientes WHERE telefono = $1 AND activo = true`,
       [req.params.telefono]
     );
-
     if (rows.length === 0) return res.status(404).json({ error: 'Cliente no encontrado' });
-
-    // Si hay un solo cliente, comportamiento original
     if (rows.length === 1) {
       const estado = await estadoCliente(req.params.telefono, 'telefono');
       return res.json(estado);
     }
-
-    // Si hay múltiples, devolver lista para que el barbero elija
     const { rows: clientes } = await db.query(
       `SELECT id, nombre, telefono, email, qr_code, creado_en
        FROM clientes WHERE telefono = $1 AND activo = true ORDER BY nombre ASC`,
       [req.params.telefono]
     );
     return res.json({ multiples: true, clientes });
-
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// GET /api/clientes/id/:id — consulta por ID (para seleccionar de lista)
+// GET /api/clientes/id/:id — consulta por ID
 router.get('/id/:id', async (req, res) => {
   try {
     const { rows } = await db.query(
@@ -76,7 +67,6 @@ router.get('/id/:id', async (req, res) => {
       [req.params.id]
     );
     if (rows.length === 0) return res.status(404).json({ error: 'Cliente no encontrado' });
-
     const estado = await estadoCliente(rows[0].qr_code, 'qr');
     if (!estado) return res.status(404).json({ error: 'Cliente no encontrado' });
     res.json(estado);
@@ -86,7 +76,6 @@ router.get('/id/:id', async (req, res) => {
 });
 
 // POST /api/clientes — registrar nuevo cliente
-// Removido ON CONFLICT para permitir múltiples clientes con el mismo teléfono
 router.post('/', async (req, res) => {
   const { nombre, telefono, email, agendapro_cliente_id } = req.body;
   if (!nombre || !telefono) return res.status(400).json({ error: 'nombre y telefono son requeridos' });
@@ -98,6 +87,39 @@ router.post('/', async (req, res) => {
       [nombre, telefono, email || null, agendapro_cliente_id || null]
     );
     res.status(201).json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PUT /api/clientes/:id — editar nombre, teléfono y/o email
+router.put('/:id', async (req, res) => {
+  const { nombre, telefono, email } = req.body;
+  if (!nombre || !telefono) return res.status(400).json({ error: 'nombre y telefono son requeridos' });
+  try {
+    const { rows } = await db.query(
+      `UPDATE clientes
+       SET nombre = $1, telefono = $2, email = $3
+       WHERE id = $4 AND activo = true
+       RETURNING id, nombre, telefono, email`,
+      [nombre, telefono, email || null, req.params.id]
+    );
+    if (rows.length === 0) return res.status(404).json({ error: 'Cliente no encontrado' });
+    res.json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/clientes/:id — soft delete (marca activo = false)
+router.delete('/:id', async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      `UPDATE clientes SET activo = false WHERE id = $1 AND activo = true RETURNING id`,
+      [req.params.id]
+    );
+    if (rows.length === 0) return res.status(404).json({ error: 'Cliente no encontrado' });
+    res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

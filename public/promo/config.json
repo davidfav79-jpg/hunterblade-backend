@@ -2,7 +2,7 @@
   "promociones": [
     {
       "id": 1,
-      "imagen": "/RegresoaClases.png",
+      "imagen": "/promo/regresoaclases.png",
       "alt": "20% en corte de niño"
     },
     {
@@ -14,6 +14,6 @@
       "id": 3,
       "imagen": "/promo/moto.png",
       "alt": "Descuento en moto"
-    } 
+    }
   ]
 }
